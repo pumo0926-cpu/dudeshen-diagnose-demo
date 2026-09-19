@@ -38,12 +38,12 @@ PROBE = [
 ]
 # L3-1 可点选的候选句（支持集＝动作/顺序类）
 EVID = [
- dict(t="她坐在第一排，个子小，上课总把背挺得很直。", ok=False, why="这是外貌与坐姿，不是「动作和顺序」。"),
- dict(t="她拖的是我已经扫过的那几排，一排一排往外退，退到哪儿，哪儿的地就变成干净的深色。", ok=True, why="退着拖、跟着进度走——动作里藏着顺序。"),
- dict(t="她把拖把在水池里涮干净，拧到一滴水都不掉，挂回墙角，挂的时候把把手朝外。", ok=True, why="一连串动作，收尾还替下一个人想好了。"),
- dict(t="她说：「你扫你的。」", ok=False, why="这是语言，而且正说明她话少——证明不了「靠动作写人」。"),
- dict(t="我去倒垃圾，回来的时候她正踮着脚擦黑板的最上面一行。", ok=True, why="够不着也要擦——动作替她说话。"),
- dict(t="我跟她没说过话。", ok=False, why="这是「我」的情况，与陈可怎么做事无关。"),
+ dict(t="她坐在第一排，个子小，上课总把背挺得很直。", p=1, ok=False, why="这是外貌与坐姿，不是「动作和顺序」。"),
+ dict(t="她拖的是我已经扫过的那几排，一排一排往外退，退到哪儿，哪儿的地就变成干净的深色。", p=11, ok=True, why="退着拖、跟着进度走——动作里藏着顺序。"),
+ dict(t="她把拖把在水池里涮干净，拧到一滴水都不掉，挂回墙角，挂的时候把把手朝外。", p=18, ok=True, why="一连串动作，收尾还替下一个人想好了。"),
+ dict(t="她说：「你扫你的。」", p=9, ok=False, why="这是语言，而且正说明她话少——证明不了「靠动作写人」。"),
+ dict(t="我去倒垃圾，回来的时候她正踮着脚擦黑板的最上面一行。", p=17, ok=True, why="够不着也要擦——动作替她说话。"),
+ dict(t="我跟她没说过话。", p=1, ok=False, why="这是「我」的情况，与陈可怎么做事无关。"),
 ]
 # ── 60 秒复述：四组关键词，命中几组＝结构成形到什么程度 ──
 RETELL = [
@@ -117,9 +117,9 @@ DATA = dict(
           probe=PROBE, evid=EVID, retell=RETELL, vocab=VOCAB),
   tr=dict(title=TR['title'], words=TR['words'], paras=TR['text'], guess=TR['guess'],
           cuts=[2,5], tol=1,
-          stemText="结合第④⑤段，说说这样安排有什么好处。（4 分，答两点）",
+          stemText="结合第⑤⑥段，说说这样安排有什么好处。（4 分，答两点）",
           stem=[dict(t="结合",k="",why="「结合」说的是怎么答（要用到那几段），不是让你干什么。真正的动作词在后面。"),
-                dict(t="第④⑤段",k="range",why=""),
+                dict(t="第⑤⑥段",k="range",why=""),
                 dict(t="说说",k="verb",why=""),
                 dict(t="这样安排",k="",why="这是题目在说「哪件事」，不是让你干的动作。"),
                 dict(t="有什么好处",k="",why="这是要你回答的内容，不是动作词。"),
@@ -135,10 +135,11 @@ DATA = dict(
                          "先立后破，把话说完整，避免「童年记忆一定准」的绝对化",
                          "说明作者也不确定，留给读者判断",
                          "为了凑够三个原因，让结构更整齐"], ans=[0,1]),
-          evid=[dict(t="被取用得越多的记忆，越不容易丢失。", ok=True, why="这是「牢」的那一半的直接依据。"),
-                dict(t="每取出来一次，记忆都有可能被改一点。", ok=True, why="这是「准」要打问号的直接依据。"),
-                dict(t="童年的情绪往往来得又快又猛。", ok=False, why="这说的是第二个原因，与第三个原因的两面无关。"),
-                dict(t="你可能有过这样的体验。", ok=False, why="这是开头的引入句，不是论据。")],
+          src=[4, 5],
+          evid=[dict(t="被取用得越多的记忆，越不容易丢失。", p=4, ok=True, why="这是「牢」的那一半的直接依据。"),
+                dict(t="每取出来一次，记忆都有可能被改一点。", p=5, ok=True, why="这是「准」要打问号的直接依据。"),
+                dict(t="童年的情绪往往来得又快又猛。", p=3, ok=False, why="这说的是第二个原因，与第三个原因的两面无关。"),
+                dict(t="你可能有过这样的体验。", p=0, ok=False, why="这是开头的引入句，不是论据。")],
           mainkw=["记忆","童年","牢","准","讲","取"]),
   profiles=PROFILES, skills=SKILLS, star=sorted(STAR), core=CORE,
 )
@@ -473,10 +474,14 @@ function scQ(i){
   const optHtml = p.opts.map((o, k) => '<button class="opt" data-k="' + k + '">' + o + '</button>').join('');
   const evidHtml = '<div id="ev" class="hide"><p class="sub" style="margin:14px 0 8px">'
     + K('那从文章里<b>点一句</b>出来，证明你说的对：', '从下面六句里<b>点一句</b>能支持你的判断的原文：') + '</p>'
-    + D.dx.evid.map((e, k) => '<button class="sent" data-e="' + k + '">' + esc(e.t) + '</button>').join('') + '</div>';
-  paint((prev ? '<div class="fb" style="margin:12px 0 0">这题你刚才答过，可以改：改完再点一次下面的「' + K('有底', '有把握') + ' / ' + K('说不好', '不确定') + '」就行。</div>' : '')
+    + D.dx.evid.map((e, k) => '<button class="sent" data-e="' + k + '"><span class="pn">' + (CN[e.p] || '') + '</span>'
+        + esc(e.t) + '</button>').join('')
+    + '<p class="note">句子前面的圈号是它在文章里的第几段。</p></div>';
+  paint((i === 0 && !prev ? '<div class="fb" style="margin:12px 0 0">这一轮<b>看不到原文</b>，凭印象答就行——'
+      + '等会儿还有一次<b>翻回去重做</b>的机会。</div>' : '')
+   + (prev ? '<div class="fb" style="margin:12px 0 0">这题你刚才答过，可以改：改完再点一次下面的「' + K('有底', '有把握') + ' / ' + K('说不好', '不确定') + '」就行。</div>' : '')
    + '<div class="qh">' + K('', '<small>' + p.layer + ' · ' + p.tag + '</small>') + p.q + '</div>'
-   + optHtml + (p.view === 'evid' ? evidHtml : '')
+   + optHtml + (p.view === 'multi' ? '<div id="mtip"></div>' : '') + (p.view === 'evid' ? evidHtml : '')
    + '<div id="conf" class="hide"><p class="sub" style="margin:18px 0 6px">'
    + K('这题，你心里有底吗？', '这题你有把握吗？<b>（必答，用来算校准度）</b>') + '</p>'
    + '<div class="conf"><button data-c="1">' + K('有底', '有把握') + '</button>'
@@ -497,8 +502,11 @@ function scQ(i){
       const k = +b.dataset.k;
       if (p.view === 'multi') {
         const at = pick.indexOf(k);
-        if (at >= 0) pick.splice(at, 1); else if (pick.length < 2) pick.push(k);
+        let full = false;
+        if (at >= 0) pick.splice(at, 1); else if (pick.length < 2) pick.push(k); else full = true;
         main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', pick.includes(+x.dataset.k)));
+        const mt = $('#mtip');
+        if (mt) mt.innerHTML = full ? '<div class="fb bad">最多选两点。想换的话，先把选中的点一下取消。</div>' : '';
         if (pick.length === 2) $('#conf').classList.remove('hide');
       } else {
         pick = k;
@@ -533,7 +541,7 @@ function scRetell(){
    + '<p style="margin:0 0 8px"><b>这篇文章讲了什么？按顺序说。</b></p>'
    + '<textarea id="rt" placeholder="谁、做了什么、先后顺序、为什么这件事值得写……"></textarea>'
    + '<div class="cnt"><span id="rc">0</span> 字</div>'
-   + '<div id="hits" class="chips" style="margin-top:10px"></div>'
+   + '<div id="hits" class="chips" style="margin-top:10px"></div><div id="tmo"></div>'
    + '<p class="note">' + K('只看这四样说到没有，不看你写得好不好看。', '判定只看四样东西有没有出现，不看文采。') + '</p>', () => {
     const ta = $('#rt');
     const render = () => {
@@ -544,8 +552,11 @@ function scRetell(){
         + (S.retell.hit[i] ? '✓ ' : '') + g.name + '</span>').join('');
     };
     ta.oninput = render; render(); ta.focus();
-    runClock(-1, 60, 0, () => { done(); });
     const done = () => { stopClock(); go('bj'); };
+    runClock(-1, 60, 0, () => {                 // 到点只提醒，不抢走正在打的字
+      const el = $('#tmo');
+      if (el) el.innerHTML = '<div class="fb">一分钟到了。<b>不用急</b>，写完点下面的「说完了」就行。</div>';
+    });
     cta('说完了', done);
   });
 }
@@ -576,7 +587,8 @@ function scBJ(){
      + '<div class="qh"><small>' + p.layer + ' · ' + p.tag + '</small>' + p.q + '</div>'
      + p.opts.map((o, k) => '<button class="opt" data-k="' + k + '">' + o + '</button>').join('')
      + (p.view === 'evid' ? '<p class="sub" style="margin:14px 0 8px">再点一句原文作证据：</p>'
-        + D.dx.evid.map((e, k) => '<button class="sent" data-e="' + k + '">' + esc(e.t) + '</button>').join('') : ''), () => {
+        + D.dx.evid.map((e, k) => '<button class="sent" data-e="' + k + '"><span class="pn">' + (CN[e.p] || '') + '</span>'
+            + esc(e.t) + '</button>').join('') : ''), () => {
       $('#tg').onclick = () => { showText = !showText; $('#tx').classList.toggle('hide', !showText); $('#tg').textContent = showText ? '收起原文' : K('翻回去看', '查看原文'); };
       const ready = () => {
         let ok;
@@ -611,20 +623,27 @@ function scBJ(){
 function scVocab(){
   steps(DXSTEPS, 4); setTop(K('十个词', '⑤ 词义速判'), K('一个 3 秒', '每题 3 秒'), () => go('bj')); noCta();
   let i = 0; S.vocab.right = 0;
+  const startPage = () => paint('<div class="card"><div class="eyebrow">最后一件事</div>'
+   + '<h2 class="sec">十个词，一个 3 秒</h2>'
+   + '<p>' + K('看加粗那个词是什么意思，凭第一反应选。<b>来不及也没关系</b>——这一轮本来就测「反应过来的快慢」，不是考你背没背过。',
+       '书面语与课内文言实词的速判，测词汇底座；3 秒上限是刻意的。') + '</p>'
+   + '<p class="sub">准备好了再开始，倒计时从你点「开始」那一刻算。</p></div>',
+   () => cta('开始', () => one()));
   const one = () => {
     if (i >= D.dx.vocab.length) { stopClock(); go('report'); return; }
     const v = D.dx.vocab[i];
+    const secs = i === 0 ? 5 : 3;              // 第一题多给 2 秒，别一进来就丢分
     paint('<div class="card tight"><div class="eyebrow">' + K('十个词 · ', '环节五 / 五 · ') + (i+1) + '/' + D.dx.vocab.length + '</div>'
      + '<h2 class="sec">' + v[0] + '</h2><p class="sub">'
-     + K('加粗那个词是什么意思？别想太久。', '划线词是什么意思？3 秒内选。') + '</p></div>'
+     + K('加粗那个词是什么意思？别想太久。', '划线词是什么意思？3 秒内选。') + (i === 0 ? '<p class="note">第一题给 5 秒，后面每题 3 秒。</p>' : '') + '</p></div>'
      + v[1].map((o, k) => '<button class="opt" data-k="' + k + '">' + esc(o) + '</button>').join(''), () => {
       let done = false;
       const next = ok => { if (done) return; done = true; stopClock(); if (ok) S.vocab.right++; i++; setTimeout(one, 120); };
-      runClock(-1, 3, 0, () => next(false));
+      runClock(-1, secs, 0, () => next(false));
       main.querySelectorAll('.opt').forEach(b => b.onclick = () => next(+b.dataset.k === v[2]));
     });
   };
-  one();
+  startPage();
 }
 """
 
@@ -815,7 +834,10 @@ function tRead(){
    + ['词不懂','关系不懂（句与句之间）','背景不懂'].map((t, i) => '<button class="opt" data-w="' + i + '"'
        + (S.tr.markWhy === i ? ' aria-pressed="true"' : '') + '>' + t + '</button>').join('')
    + (S.tr.markWhy !== undefined ? '<div id="kfb" class="fb ok">标出来就行。这一处先记着，等会儿答题时再回来看一眼。</div>' : '')
-   + '</div><div id="rneed"></div>', () => {
+   + '</div>'
+   + (S.tr.allClear ? '<div class="fb ok">你说这篇没有不懂的地方——那等会儿答题时留意一下，看是不是真的都懂了。</div>'
+       : '<button class="link" id="allclear">这篇我真的没有不懂的地方 ›</button>')
+   + '<div id="rneed"></div>', () => {
     const need = () => { const el = $('#rneed'); if (!el) return;
       el.innerHTML = (S.tr.markWhy !== undefined) ? ''
         : '<div class="fb">还差：' + (S.tr.mark === undefined ? '<b>点一下任意一段</b>，标出你没看懂的地方' : '再选一下<b>是哪种不懂</b>') + '</div>'; };
@@ -829,8 +851,10 @@ function tRead(){
       $('#why').classList.remove('hide'); need();
       $('#why').scrollIntoView({behavior:'smooth', block:'center'});
     });
+    const ac = $('#allclear');
+    if (ac) ac.onclick = () => { S.tr.allClear = true; S.tr.markWhy = 3; go('train', 1); };
     main.querySelectorAll('[data-w]').forEach(b => b.onclick = () => {
-      S.tr.markWhy = +b.dataset.w;
+      S.tr.markWhy = +b.dataset.w; S.tr.allClear = false;
       main.querySelectorAll('[data-w]').forEach(x => x.setAttribute('aria-pressed', +x.dataset.w === S.tr.markWhy));
       if (!$('#kfb')) $('#why').insertAdjacentHTML('beforeend',
         '<div id="kfb" class="fb ok">标出来就行。这一处先记着，等会儿答题时再回来看一眼。</div>');
@@ -847,6 +871,13 @@ function gateHead(k, title, code, state){
    + '<span class="pill ' + (state === 2 ? 'ok' : (state === 1 ? 'on' : '')) + '">'
    + (state === 2 ? '✓ 完成' : (state === 1 ? '现在这关' : '还没开')) + '</span></div>'
    + '<h3 class="sub3" style="margin-top:0">' + title + '</h3>';
+}
+/* 答题时能随手翻到要用的那两段——原来只能退回上一步去找 */
+function srcFold(idxs, label){
+  return '<details class="ex"><summary>' + label + ' ›</summary><div class="in">'
+   + idxs.map(i => '<p style="margin:0 0 10px;color:var(--ink);line-height:1.9"><span class="pn">' + (CN[i] || (i+1)) + '</span>'
+       + D.tr.paras[i].replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') + '</p>').join('')
+   + '</div></details>';
 }
 const goGate = k => '<button class="cta ghost" style="margin-top:10px" '
   + 'onclick="document.getElementById(\'g' + k + '\').scrollIntoView({behavior:\'smooth\',block:\'start\'})">'
@@ -892,14 +923,17 @@ function tAsk(){
           + ' data-n="' + n + '" style="display:inline-block;width:auto;margin-right:8px">' + n + ' 点</button>').join('')
       + '<div id="fb2">' + (st.cnt !== null ? fb2(st.cnt) : '') + '</div></div>';
     if (st.phase >= 2) h += '<div class="card" id="g2">' + gateHead(2, esc(D.tr.pts.q), '', state(2))
-      + '<p class="sub">题目让你「结合第④⑤段」——先回去把那两段看一眼，再选。</p>'
+      + '<p class="sub">题目让你「结合第⑤⑥段」——就在下面，点开看一眼再选。</p>'
+      + srcFold(D.tr.src, '看第⑤⑥段')
       + D.tr.pts.opts.map((o, i) => '<button class="opt" data-p="' + i + '"'
           + (st.pts.includes(i) ? ' aria-pressed="true"' : '') + '>' + esc(o) + '</button>').join('')
       + '<div id="fb3">' + (st.pts.length === 2 ? fb3(D.tr.pts.ans.every(a => st.pts.includes(a))) : '') + '</div></div>';
     if (st.phase >= 3) h += '<div class="card" id="g3">' + gateHead(3, K('给你选的两点，各找一句原文撑着', '给你的要点挂一句原文'), 'O4', state(3))
       + '<p class="sub">' + K('找不到句子撑的那一点，多半不是答案。', '挂不住的那一点，八成不是答案。') + '</p>'
+      + srcFold(D.tr.src, '再看一眼第⑤⑥段')
       + D.tr.evid.map((e, i) => '<button class="sent" data-v="' + i + '"'
-          + (st.ev === i ? ' aria-pressed="true"' : '') + '>' + esc(e.t) + '</button>').join('')
+          + (st.ev === i ? ' aria-pressed="true"' : '') + '><span class="pn">' + (CN[e.p] || '') + '</span>'
+          + esc(e.t) + '</button>').join('')
       + '<div id="fb4">' + (st.ev !== null ? fb4(D.tr.evid[st.ev]) : '') + '</div></div>';
     paint(h, wire, keep);
   };
@@ -918,7 +952,7 @@ function tAsk(){
         if (all) { S.tr.o1 = true; st.phase = Math.max(st.phase, 1); }
         render(true);
         $('#fb1').innerHTML = all
-          ? '<div class="fb ok">✓ 三件都找齐了：<b>说说</b>（干什么）· <b>第④⑤段</b>（去哪找）· <b>答两点</b>（写几点）。'
+          ? '<div class="fb ok">✓ 三件都找齐了：<b>说说</b>（干什么）· <b>第⑤⑥段</b>（去哪找）· <b>答两点</b>（写几点）。'
             + K('以后每道大题，动笔前先这么问自己三遍。', '连续 3 次拆全才算过关。')
             + '<br><b>这一关过了，下面是第 ② 关。</b></div>' + goGate(1)
           : '<div class="fb ok">✓ 对。接着找第 ' + (st.slotIdx+1) + ' 件：<b>' + esc(SL[st.slotIdx].q) + '</b></div>';
@@ -1068,12 +1102,12 @@ function tWrite(){
       $('#wc').textContent = v.length; S.tr.write = v.length >= 15;
       const nd = $('#wneed');
       if (nd) nd.innerHTML = S.tr.write ? '' : '<div class="fb">还差 <b>' + (15 - v.length) + '</b> 字就能收工。</div>';
-      S.tr.write ? cta('今天读完了', () => go('tdone')) : noCta(); };
+      S.tr.write ? cta('写好了', () => go('wfb')) : noCta(); };
     ta.oninput = check; noCta(); check();
   });
 }
 function scTDone(){
-  stopClock(); steps(TRSTEPS2, 5); setTop('今天读完了', D.tr.title, () => go('train', 4), true);
+  stopClock(); steps(TRSTEPS2, 5); setTop('今天读完了', D.tr.title, () => go(S.tr.writeText ? 'wfb' : 'train', S.tr.writeText ? undefined : 4), true);
   if (MODE === 'kid') return scTDoneKid();
   const done = [
     ['P7','理解监控', S.tr.markWhy !== undefined],
@@ -1100,6 +1134,40 @@ function scTDone(){
    + foot(), () => cta('看 17 个微技能与 12 周疗程', () => go('skills')));
 }
 
+/* 写完那一句之后，先回应「你写的这句」，再去结算。
+   判定全部按字面算（Demo 不接 AI），并如实告诉孩子这一点。 */
+function scWriteBack(){
+  stopClock(); steps(TRSTEPS2, 4); setTop('你写的这句', D.tr.title, () => go('train', 4), true);
+  const t = (S.tr.writeText || '').trim();
+  const self = /我|我们|咱|自己/.test(t);
+  const half = /牢|记得住|记得清|清楚|准|记错|不一定|改/.test(t);
+  const detail = t.length >= 25 || /年级|岁|那年|第一次|夏天|冬天|奶奶|外婆|妈妈|爸爸|同学/.test(t);
+  const rows = [
+    [self, '写的是你自己的事', '这一点最关键——把读到的东西接到自己身上，比复述文章有用得多。',
+           '下次试试写自己身上的一件事。哪怕很小，也比转述文章里的例子强。'],
+    [half, '说清了是「牢」还是「准」', '你没有只停在「我记得」，而是说了它属于哪一半——这正是这篇文章的分法。',
+           '可以再补半句：这件事你是记得特别牢，还是其实不一定准？'],
+    [detail, '带了具体的细节', '有时间、有场景，别人读了能看见画面。',
+           '再加一个细节——几年级、在哪儿、谁在场——这句就立起来了。'],
+  ];
+  const got = rows.filter(r => r[0]).length;
+  paint('<div class="card"><div class="eyebrow">你刚才写的</div>'
+   + '<div class="said" style="margin:0">' + esc(t) + '</div></div>'
+   + '<div class="card"><div class="eyebrow">读了你这句，说三点</div>'
+   + rows.map(r => '<div class="did"><span class="m ' + (r[0] ? '' : 'no') + '">' + (r[0] ? '✓' : '+') + '</span>'
+     + '<span class="t"><b>' + r[1] + '</b>' + (r[0] ? r[2] : r[3]) + '</span></div>').join('')
+   + '<p class="note">' + (got === 3 ? '三样都有了。这句话可以直接放进作文里。'
+       : (got === 0 ? '这三样一样都还没有——不着急，明天那篇再试一次。' : '有了 ' + got + ' 样，剩下的下次补。')) + '</p></div>'
+   + '<div class="card"><div class="eyebrow">别人写了什么（模拟）</div>'
+   + '<div class="quote"><b>初一 · 同龄人</b>三年级我被狗追过，现在还记得那条巷子的味道，但我妈说那狗根本没追我。</div>'
+   + '<div class="quote"><b>初一 · 同龄人</b>我记得幼儿园毕业照我哭了，可照片上我在笑——大概是听我爸讲了太多遍。</div>'
+   + '<p class="note">拿自己那句跟这两句比一下：差在细节，还是差在「哪一半」？</p></div>'
+   + '<div class="fb">这三条是按你写的字面算的（Demo 不联网、不接 AI）。'
+   + '真实产品里这一步由 AI 读你写的<b>内容</b>——你的看法站不站得住、漏了文章里的哪一处——那是整套里最值得花钱的一环。</div>'
+   + '<div class="kidfoot">写完这句，今天这一篇就真的结束了。</div>',
+   () => cta('看看今天做到了什么', () => go('tdone')));
+}
+
 /* 孩子看到的收尾：做到了什么 ＋ 明天还有一篇。没有编号，没有进度条式的评分 */
 function scTDoneKid(){
   const done = [
@@ -1119,6 +1187,9 @@ function scTDoneKid(){
    + done.map(d => '<div class="did"><span class="m ' + (d[1] ? '' : 'no') + '">' + (d[1] ? '✓' : '–') + '</span>'
      + '<span class="t"><b>' + d[0] + '</b>' + d[2] + '</span></div>').join('')
    + '<p class="note">同一件事连着三篇都做到，才算真的会了。今天是第一篇。</p></div>'
+   + (S.tr.writeText ? '<div class="card"><div class="eyebrow">今天你留下的一句话</div>'
+       + '<div class="said" style="margin:0">' + esc(S.tr.writeText.trim()) + '</div>'
+       + '<p class="note">这些句子会一句句攒起来。攒够一学期，就是一本只属于你的读书笔记。</p></div>' : '')
    + '<div class="card"><div class="eyebrow">明天</div><h2 class="sec">还有一篇，一样十五分钟</h2>'
    + '<p>今天到这儿就结束了，不用再往下刷。<b>断一天也不清零</b>，回来接着读就行。</p></div>'
    + '<div class="kidfoot"><a href="javascript:void(0)" id="toPro">这些练的是什么，给大人看 ›</a></div>',
@@ -1178,7 +1249,7 @@ function scPlan(){
 
 /* ══ 路由 ══ */
 const R = {intro: scIntro, read: scRead, q: scQ, retell: scRetell, bj: scBJ, vocab: scVocab,
-           report: scReport, train: scTrain, tdone: scTDone, skills: scSkills, plan: scPlan};
+           report: scReport, train: scTrain, wfb: scWriteBack, tdone: scTDone, skills: scSkills, plan: scPlan};
 function go(name, arg){ CUR = [name, arg]; (R[name] || scIntro)(arg); }
 go('intro');
 """

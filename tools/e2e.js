@@ -73,6 +73,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   console.log('\n[3] 八道题（孩子视角无 L1/L2 标签）');
   t = await txt();
   ok(!/L1|L2|L3|探针|校准/.test(t), '题面不出现 L1/L2/探针/校准');
+  ok(t.includes('看不到原文') && t.includes('翻回去重做'), '第 1 题先说清「凭印象答，等会儿能翻回去」');
   for (let i = 0; i < 8; i++) {
     const view = await ev(`(D.dx.probe[${i}].view||'single')`);
     if (view === 'multi') await ev(`document.querySelectorAll('.opt')[2].click();document.querySelectorAll('.opt')[3].click()`);
@@ -116,6 +117,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     await ev(`document.querySelector('#barbtn').click()`); await sleep(160);
   }
   ok(guard > 0, '错题进入「再来一次」', guard + ' 题');
+  ok((await txt()).includes('准备好了再开始'), '词义速判先给起步页，不一进来就倒计时');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
+  ok((await txt()).includes('第一题给 5 秒'), '第一题多给 2 秒');
   for (let i = 0; i < 10; i++) {
     if (!(await ev(`!!document.querySelector('.opt') && /别想太久|3 秒内选/.test(document.querySelector('#main').textContent)`))) break;
     await ev(`document.querySelectorAll('.opt')[0].click()`); await sleep(190);
@@ -195,6 +199,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await shot('k05-train-ask');
   await ev(`document.querySelectorAll('[data-v]')[0].click()`); await sleep(250);
   ok(await ev(`S.tr.o4 === true`), '证据句挂对');
+  ok(await ev(`document.querySelectorAll('#g2 details, #g3 details').length >= 2`), '第③④关能就地翻到第⑤⑥段');
+  ok(await ev(`document.querySelectorAll('#g3 .sent .pn').length === 4`), '证据句标了段号');
   await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
   ok((await txt()).includes('切成三块'), '第 4 步 辨');
   await ev(`document.querySelector('#back').click()`); await sleep(280);
@@ -235,7 +241,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await ev(`(()=>{const a=document.querySelector('#w');a.value='我记得一年级掉了第一颗牙，可能是我妈讲得太多次了';a.dispatchEvent(new Event('input'))})()`);
   await sleep(200);
   ok(!(await ev(`document.querySelector('#bar').classList.contains('hide')`)), '满 15 字可收工');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(350);
+
+  console.log('\n[7.5] 写完那句话，先有回应');
+  t = await txt();
+  ok(t.includes('第一颗牙'), '把孩子写的那句原样摆出来');
+  ok(await ev(`document.querySelectorAll('.did').length === 3`), '针对这句话给三条回应');
+  ok(t.includes('别人写了什么'), '给同龄人样例做对照');
+  ok(t.includes('Demo 不联网、不接 AI'), '如实说明这几条是按字面算的');
+  await shot('k06a-writeback');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(350);
 
   console.log('\n[8] 孩子看到的收尾');
   t = await txt();
@@ -244,6 +259,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok(await ev(`document.querySelectorAll('.did .m:not(.no)').length === 7`), '七件全做到');
   ok(!/P7|O1|O2|O4|P4|P5|微技能|达标/.test(t), '不出现微技能编号与「达标」');
   ok(t.includes('断一天也不清零'), '明确「断了能接上」');
+  ok(t.includes('第一颗牙'), '结算页留住今天写的那句话');
   await shot('k06-train-done');
 
   console.log('\n[9] 大人那一层：面板与疗程');
