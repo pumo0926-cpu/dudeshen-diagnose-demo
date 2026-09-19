@@ -118,9 +118,18 @@ DATA = dict(
   tr=dict(title=TR['title'], words=TR['words'], paras=TR['text'], guess=TR['guess'],
           cuts=[2,5], tol=1,
           stemText="结合第④⑤段，说说这样安排有什么好处。（4 分，答两点）",
-          stem=[dict(t="结合",k=""),dict(t="第④⑤段",k="range"),dict(t="说说",k="verb"),
-                dict(t="这样安排",k=""),dict(t="有什么好处",k=""),dict(t="4 分",k=""),
-                dict(t="答两点",k="count")],
+          stem=[dict(t="结合",k="",why="「结合」说的是怎么答（要用到那几段），不是让你干什么。真正的动作词在后面。"),
+                dict(t="第④⑤段",k="range",why=""),
+                dict(t="说说",k="verb",why=""),
+                dict(t="这样安排",k="",why="这是题目在说「哪件事」，不是让你干的动作。"),
+                dict(t="有什么好处",k="",why="这是要你回答的内容，不是动作词。"),
+                dict(t="4 分",k="",why="这是分数。它能帮你推出写几点，但它本身不是「要写几点」那句话。"),
+                dict(t="答两点",k="count",why="")],
+          slots=[dict(k="verb",  q="要你干什么", hint="一个动词：说说 / 分析 / 概括 / 赏析…"),
+                 dict(k="range", q="去哪儿找",   hint="哪几段，还是全文"),
+                 dict(k="count", q="要写几点",   hint="题目直接说了几点，或者从分数推")],
+          example=dict(stem="联系全文，分析题目「藤野先生」的含义。（6 分，答三点）",
+                       marks=[["分析", "要你干什么"], ["联系全文", "去哪儿找"], ["答三点", "要写几点"]]),
           pts=dict(q="这样安排的好处，选两点（4 分）",
                    opts=["同一个机制的两面：先说它让记忆更牢，再说它也让记忆被改动",
                          "先立后破，把话说完整，避免「童年记忆一定准」的绝对化",
@@ -292,6 +301,20 @@ textarea:focus,input:focus{outline:2px solid var(--accent);outline-offset:-1px}
 .did .t b{color:var(--ink);font-weight:620;display:block;font-size:15px}
 .kidfoot{font-size:12px;color:var(--ink-muted);text-align:center;line-height:1.9;padding:22px 0 0}
 .kidfoot a{color:var(--ink-2)}
+.slot{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:11px;margin:0 0 8px;background:var(--surface)}
+.slot.on{border-color:var(--accent);background:var(--wash)}
+.slot.done{border-color:var(--ok);background:var(--ok-wash)}
+.slot b{flex:1;font-size:14.5px;font-weight:620;color:var(--ink);line-height:1.45}
+.slot b i{font-style:normal;font-size:11.5px;color:var(--ink-muted);display:block;font-weight:400;margin-top:1px}
+.slot .v{flex:0 0 auto;font-size:14.5px;color:var(--ink-muted);border-bottom:1px dashed var(--axis);min-width:72px;text-align:center;padding:0 6px}
+.slot.on .v{color:var(--accent)}
+.slot.done .v{color:var(--ok);font-weight:620;border-bottom-color:transparent}
+.chip[disabled]{opacity:.32}
+.ex{border:1px solid var(--border);border-radius:11px;background:var(--surface-2);margin:0 0 12px;overflow:hidden}
+.ex>summary{cursor:pointer;list-style:none;padding:10px 13px;font-size:13.5px;color:var(--accent)}
+.ex>summary::-webkit-details-marker{display:none}
+.ex .in{padding:0 13px 12px;font-size:13.5px;color:var(--ink-2)}
+.mk{border-radius:6px;padding:1px 6px;font-weight:620;background:var(--wash);color:var(--accent)}
 """
 
 JS = r"""
@@ -717,14 +740,15 @@ function scTrain(k){
   dots(k + 1, 5); setTop(TSTEPS[k] + '　第 ' + (k+1) + ' 步 / 5', D.tr.title, null);
   [tGuess, tRead, tAsk, tSort, tWrite][k]();
 }
-function stepHead(min, target, desc){
+function stepHead(min, title, codes, desc){
   return '<div class="card tight"><div class="eyebrow">' + min + '</div>'
-   + (target ? '<h2 class="sec">' + K('', '靶点：') + target + '</h2>' : '<h2 class="sec">' + K('先热个身', '常规') + '</h2>')
+   + '<h2 class="sec">' + (title || K('先热个身', '常规')) + '</h2>'
+   + (codes && MODE === 'pro' ? '<p class="sub" style="margin:3px 0 6px;color:var(--accent)">靶点：' + codes + '</p>' : '')
    + '<p class="sub" style="margin:0">' + desc + '</p></div>';
 }
 function tGuess(){
   const g = D.tr.guess; let pick = null;
-  paint(stepHead('第 1 步 · 约 1 分钟', '', K('先押一个答案。读的时候你就有事可做了——这题不算对错。',
+  paint(stepHead('第 1 步 · 约 1 分钟', '', '', K('先押一个答案。读的时候你就有事可做了——这题不算对错。',
         '先押一个答案，读的时候就有事可做——这一步不判对错。'))
    + '<div class="qh">' + esc(g.q) + '</div>'
    + g.options.map((o, i) => '<button class="opt" data-k="' + i + '">' + esc(o) + '</button>').join('')
@@ -743,7 +767,7 @@ function tGuess(){
   });
 }
 function tRead(){
-  paint(stepHead('第 2 步 · 约 5 分钟', K('标一处你没看懂的地方', 'P7 理解监控'),
+  paint(stepHead('第 2 步 · 约 5 分钟', '标一处你没看懂的地方', 'P7 理解监控',
         K('随便哪一段都行，<b>必须标一处</b>。「全都懂」反而最危险——不懂的地方你自己不知道。',
           '读的时候<b>必须标出一处「我这里没懂」</b>——全篇都懂，本身就是一个失校准信号。'))
    + '<div class="txt">' + paras(D.tr.paras, 'pick', true) + '</div>'
@@ -766,24 +790,35 @@ function tRead(){
   });
 }
 function tAsk(){
-  let phase = 0, hit = [], cnt = null, pts = [], ev = null;
-  const stem = D.tr.stem;
+  let phase = 0, cnt = null, pts = [], ev = null;
+  let slotIdx = 0, filled = [null, null, null], used = [];   // 三件事一件一件填，不再让人「点出三样」
+  const stem = D.tr.stem, SL = D.tr.slots;
   const render = () => {
-    let h = stepHead('第 3 步 · 约 4 分钟', K('把题看懂，再动笔', 'O1 题干拆解 ＋ O2 分值→要点数 ＋ O4 证据句'),
+    let h = stepHead('第 3 步 · 约 4 分钟', '把题看懂，再动笔', 'O1 题干拆解 · O2 分值→要点数 · O4 证据句',
         K('大题丢分，一多半丢在没看清题目要什么。', '中考主观题的三个对接口，全部可判定。'));
     h += '<div class="card"><div class="eyebrow">' + K('第 ① 关', '第 ① 关 · O1') + '</div>'
-      + '<h3 class="sub3" style="margin-top:0">' + K('这道题到底要你干什么', '把题干圈开') + '</h3>'
+      + '<h3 class="sub3" style="margin-top:0">一道题在问什么，其实就三件事</h3>'
+      + '<p class="sub">下面这句是题目。把它拆开，看它到底要你做什么。</p>'
       + '<div class="notes" style="margin:0 0 10px">' + esc(D.tr.stemText) + '</div>'
-      + '<p class="sub">' + K('点出三样：<b>要你干什么</b>、<b>去哪儿找</b>、<b>写几点</b>。多点一个也算没拆对。',
-          '在下面点出三样：<b>指令动词</b>（要干什么）、<b>范围限定</b>（在哪找）、<b>数量限定</b>（要几点）。多点了也算没拆对。') + '</p>'
-      + '<div class="chips" id="stem">'
-      + stem.map((t, i) => '<button class="chip" data-s="' + i + '"' + (hit.includes(i) ? ' aria-pressed="true"' : '') + '>' + esc(t.t) + '</button>').join('')
+      + '<details class="ex"><summary>没做过？先看一个例子 ›</summary><div class="in">'
+      + '<p style="margin:0 0 8px;color:var(--ink)">' + esc(D.tr.example.stem) + '</p>'
+      + D.tr.example.marks.map(m => '<div style="margin:0 0 4px"><span class="mk">' + esc(m[0]) + '</span>'
+          + ' <span style="color:var(--ink-muted)">←&nbsp;' + esc(m[1]) + '</span></div>').join('')
+      + '<p style="margin:8px 0 0;font-size:12.5px;color:var(--ink-muted)">每道大题都能这么拆。下面轮到你。</p>'
+      + '</div></details>'
+      + SL.map((sl, i) => '<div class="slot ' + (filled[i] ? 'done' : (i === slotIdx ? 'on' : '')) + '">'
+          + '<b>' + (i+1) + '. ' + esc(sl.q) + '？<i>' + esc(sl.hint) + '</i></b>'
+          + '<span class="v">' + (filled[i] ? esc(filled[i]) : (i === slotIdx ? '点下面的词' : '　')) + '</span></div>').join('')
+      + '<div class="chips" id="stem" style="margin-top:10px">'
+      + stem.map((t, i) => '<button class="chip" data-s="' + i + '"'
+          + (used.includes(i) ? ' disabled aria-pressed="true"' : '') + '>' + esc(t.t) + '</button>').join('')
       + '</div><div id="fb1"></div></div>';
     if (phase >= 1) h += '<div class="card"><div class="eyebrow">' + K('第 ② 关', '第 ② 关 · O2') + '</div>'
       + '<h3 class="sub3" style="margin-top:0">4 分，写几点？</h3>'
       + [1,2,3,4].map(n => '<button class="opt" data-n="' + n + '" style="display:inline-block;width:auto;margin-right:8px">' + n + ' 点</button>').join('')
       + '<div id="fb2"></div></div>';
     if (phase >= 2) h += '<div class="card"><div class="eyebrow">第 ③ 关</div><h3 class="sub3" style="margin-top:0">' + esc(D.tr.pts.q) + '</h3>'
+      + '<p class="sub">题目让你「结合第④⑤段」——先回去把那两段看一眼，再选。</p>'
       + D.tr.pts.opts.map((o, i) => '<button class="opt" data-p="' + i + '">' + esc(o) + '</button>').join('') + '<div id="fb3"></div></div>';
     if (phase >= 3) h += '<div class="card"><div class="eyebrow">' + K('第 ④ 关', '第 ④ 关 · O4') + '</div>'
       + '<h3 class="sub3" style="margin-top:0">' + K('给你选的两点，各找一句原文撑着', '给你的要点挂一句原文') + '</h3>'
@@ -794,21 +829,23 @@ function tAsk(){
   const wire = () => {
     noCta();
     main.querySelectorAll('#stem .chip').forEach(b => b.onclick = () => {
-      const i = +b.dataset.s;
-      const at = hit.indexOf(i); if (at >= 0) hit.splice(at, 1); else hit.push(i);
-      b.setAttribute('aria-pressed', hit.includes(i));
-      const kinds = new Set(hit.filter(x => stem[x].k).map(x => stem[x].k));
-      const extra = hit.filter(x => !stem[x].k).length;
-      if (kinds.size === 3 && extra === 0) {
-        S.tr.o1 = true; phase = Math.max(phase, 1);
-        $('#fb1').innerHTML = '<div class="fb ok">✓ 三样齐了：<b>说说</b>（要你干什么）· <b>第④⑤段</b>（去哪儿找）· <b>答两点</b>（写几点）。'
-          + K('「4 分」是分数，不是要几点——不过它能告诉你写几点，下一关就用。以后每道大题，先这么拆一遍。',
-              '「4 分」是赋分，不是数量限定——它决定要点数，下一关就用它。连续 3 次拆全才算过关。') + '</div>';
-        setTimeout(render, 900);
-      } else if (hit.length >= 3) {
-        $('#fb1').innerHTML = '<div class="fb bad">还不对。三样各点一个：<b>要你干什么</b>（一个动词）、<b>去哪儿找</b>（哪几段）、<b>写几点</b>（数量）。'
-          + '别的词——包括「4 分」——都不算。</div>';
-      } else $('#fb1').innerHTML = '';
+      const i = +b.dataset.s; if (used.includes(i) || slotIdx >= SL.length) return;
+      const kind = stem[i].k, want = SL[slotIdx];
+      if (kind === want.k) {                       // 填对当前这一件
+        filled[slotIdx] = stem[i].t; used.push(i); slotIdx++;
+        const all = slotIdx >= SL.length;
+        if (all) { S.tr.o1 = true; phase = Math.max(phase, 1); }
+        render();
+        $('#fb1').innerHTML = all
+          ? '<div class="fb ok">✓ 三件都找齐了：<b>说说</b>（干什么）· <b>第④⑤段</b>（去哪找）· <b>答两点</b>（写几点）。'
+            + K('以后每道大题，动笔前先这么问自己三遍。', '连续 3 次拆全才算过关。') + '</div>'
+          : '<div class="fb ok">✓ 对。接着找第 ' + (slotIdx+1) + ' 件：<b>' + esc(SL[slotIdx].q) + '</b></div>';
+      } else {                                     // 点错了：说清为什么不是它
+        const other = SL.findIndex(x => x.k === kind);
+        $('#fb1').innerHTML = '<div class="fb bad">' + (other >= 0
+          ? '「' + esc(stem[i].t) + '」是<b>' + esc(SL[other].q) + '</b>那一件，等会儿才轮到它。现在先找<b>' + esc(want.q) + '</b>。'
+          : esc(stem[i].why)) + '</div>';
+      }
     });
     main.querySelectorAll('[data-n]').forEach(b => b.onclick = () => {
       cnt = +b.dataset.n;
@@ -846,7 +883,7 @@ function tAsk(){
 function tSort(){
   let cuts = [];
   const render = () => {
-    let h = stepHead('第 4 步 · 约 2 分钟', K('切成三块，再压成一句话', 'P4 结构切块 ＋ P5 主旨压缩'),
+    let h = stepHead('第 4 步 · 约 2 分钟', '切成三块，再压成一句话', 'P4 结构切块 · P5 主旨压缩',
         K('概括题写不准，多半是没先把文章切开。', '概括题抓不准，十有八九是结构没切开。先切块，再压一句话。'));
     h += '<div class="card"><div class="eyebrow">切块</div><p class="sub">在段落之间切<b>两刀</b>，把全文分成三块。</p><div class="txt" style="font-size:15px">';
     D.tr.paras.forEach((p, i) => {
@@ -901,7 +938,7 @@ function tSort(){
   render();
 }
 function tWrite(){
-  paint(stepHead('第 5 步 · 约 2 分钟', K('写一句就收工', '一次最低门槛输出'),
+  paint(stepHead('第 5 步 · 约 2 分钟', '写一句就收工', '一次最低门槛输出 · 写作回应文本 ES≈+0.40',
         K('这一步不能跳。但真的只要一句话，写完今天就结束了。',
           '证据最强的一环（写作回应文本 ES≈+0.40），所以它<b>不可跳过</b>——但门槛只有一句话。'))
    + '<div class="qh">读完这篇，你想起自己小时候的哪件事？你觉得它更像是「记得牢」的那一半，还是「记不准」的那一半？</div>'

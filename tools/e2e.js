@@ -143,14 +143,25 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok(await ev(`!!document.querySelector('#kfb')`), '标完给一句正向回应');
   await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
   t = await txt();
-  ok(t.includes('要你干什么') && !/O1|O2|O4|题干拆解/.test(t), '第 3 步：孩子话，无 O1/O2/O4 编号');
-  await ev(`(()=>{const s=D.tr.stem;const i=s.findIndex(x=>!x.k);document.querySelector('[data-s="'+i+'"]').click()})()`);
-  await ev(`(()=>{const s=D.tr.stem;['range','verb','count'].forEach(k=>{const i=s.findIndex(x=>x.k===k);document.querySelector('[data-s="'+i+'"]').click()})})()`);
-  await sleep(300);
-  ok(await ev(`S.tr.o1 !== true`), '多点无关词 → 判不过');
-  await ev(`(()=>{const s=D.tr.stem;const i=s.findIndex(x=>!x.k);document.querySelector('[data-s="'+i+'"]').click()})()`);
-  await sleep(1100);
-  ok(await ev(`S.tr.o1 === true`), '三样齐 → 判过');
+  ok(t.includes('一道题在问什么') && !/O1|O2|O4|题干拆解|指令动词|范围限定|数量限定/.test(t),
+     '第 3 步：白话标题，无 O1／指令动词／范围限定等黑话');
+  ok(await ev(`document.querySelectorAll('.slot').length === 3`), '三件事拆成三个空，一件一件填');
+  ok(await ev(`document.querySelectorAll('.slot')[0].classList.contains('on')`), '当前该填哪一个有高亮');
+  ok(await ev(`!!document.querySelector('.ex')`), '有「没做过？先看一个例子」');
+  await ev(`(()=>{const s=D.tr.stem;const i=s.findIndex(x=>x.k==='count');document.querySelector('[data-s="'+i+'"]').click()})()`);
+  await sleep(220);
+  ok((await txt()).includes('等会儿才轮到它'), '顺序点错 → 告诉他现在该找哪一件');
+  ok(await ev(`S.tr.o1 !== true`), '顺序错不算过');
+  await ev(`(()=>{const s=D.tr.stem;const i=s.findIndex(x=>x.t==='4 分');document.querySelector('[data-s="'+i+'"]').click()})()`);
+  await sleep(220);
+  ok((await txt()).includes('这是分数'), '点「4 分」→ 解释为什么不是它');
+  await shot('k05a-stem-slots');
+  for (const kk of ['verb','range','count']) {
+    await ev(`(()=>{const s=D.tr.stem;const i=s.findIndex(x=>x.k==='${kk}');document.querySelector('[data-s="'+i+'"]').click()})()`);
+    await sleep(260);
+  }
+  ok(await ev(`S.tr.o1 === true`), '三件按顺序填齐 → 判过');
+  ok(await ev(`document.querySelectorAll('.slot.done').length === 3`), '三个空都填上了');
   await ev(`document.querySelector('[data-n="2"]').click()`); await sleep(900);
   ok(await ev(`S.tr.o2 === true`), '4 分 → 2 点');
   await ev(`document.querySelectorAll('[data-p]')[0].click();document.querySelectorAll('[data-p]')[1].click()`); await sleep(1100);
