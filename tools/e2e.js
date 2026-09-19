@@ -1,10 +1,10 @@
-/* 全流程自测：用系统自带的 Chrome（headless）+ CDP 走完分诊与训练块，逐项断言。
+/* 全流程自测：用系统自带的 Chrome（headless）+ CDP 走完孩子视角与大人视角，逐项断言。
  * 不需要 playwright/puppeteer —— Node 22+ 自带 WebSocket，直连 CDP 即可。
  *
  *   CH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
  *   "$CH" --headless=new --remote-debugging-port=9222 --user-data-dir=/tmp/cdp --no-first-run &
- *   node tools/e2e.js "$(pwd)/index.html"                              # 测本地文件
- *   node tools/e2e.js https://pumo0926-cpu.github.io/dudeshen-diagnose-demo/   # 测线上
+ *   node tools/e2e.js "$(pwd)/index.html"                                      # 本地文件
+ *   node tools/e2e.js https://pumo0926-cpu.github.io/dudeshen-diagnose-demo/   # 线上
  *
  * 截图落在 /tmp/shot-*.png；退出码非 0 即有断言失败。
  */
@@ -17,9 +17,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const page = targets.find(t => t.type === 'page');
   const ws = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise(r => ws.addEventListener('open', r));
-  let id = 0; const waits = new Map();
+  let id = 0; const waits = new Map(); const pageErrors = [];
   ws.addEventListener('message', e => {
     const m = JSON.parse(e.data);
+    if (m.method === 'Runtime.exceptionThrown') pageErrors.push(JSON.stringify(m.params.exceptionDetails).slice(0, 200));
     if (m.id && waits.has(m.id)) { waits.get(m.id)(m); waits.delete(m.id); }
   });
   const send = (method, params = {}) => new Promise(res => {
@@ -30,6 +31,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     if (r.result && r.result.exceptionDetails) throw new Error(JSON.stringify(r.result.exceptionDetails).slice(0, 400));
     return r.result.result.value;
   };
+  const txt = () => ev(`document.querySelector('#main').textContent`);
   const shot = async name => {
     const r = await send('Page.captureScreenshot', {format: 'png'});
     fs.writeFileSync('/tmp/shot-' + name + '.png', Buffer.from(r.result.data, 'base64'));
@@ -40,150 +42,157 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await send('Page.enable'); await send('Runtime.enable');
   await send('Emulation.setDeviceMetricsOverride', {width: 414, height: 896, deviceScaleFactor: 2, mobile: true});
   await send('Page.navigate', {url: process.argv[2].startsWith('http') ? process.argv[2] : 'file://' + process.argv[2]});
-  await sleep(900);
+  await sleep(1000);
 
-  console.log('\n[1] 封面');
-  ok(await ev(`document.querySelector('#main').textContent.includes('先定位')`), '封面渲染');
-  ok(await ev(`document.querySelectorAll('.gate').length===3`), '三道闸门卡片');
-  await shot('01-intro');
+  console.log('\n[1] 封面（默认＝孩子视角）');
+  ok(await ev(`MODE === 'kid'`), '默认进孩子视角');
+  let t = await txt();
+  ok(t.includes('先读一篇'), '孩子版标题');
+  ok(!/闸门|分诊|画像|测评/.test(t), '孩子封面无「闸门／分诊／画像／测评」等词');
+  ok(await ev(`!document.querySelector('#mode').classList.contains('hide')`), '有「给大人看」入口');
+  await shot('k01-intro');
+  await ev(`document.querySelector('#mode').click()`); await sleep(200);
+  ok((await txt()).includes('三道闸门') || (await txt()).includes('先定位'), '切到大人视角看到方案层');
+  await ev(`document.querySelector('#mode').click()`); await sleep(200);
+  ok(await ev(`MODE === 'kid'`), '能切回孩子视角');
 
-  console.log('\n[2] 限时默读');
-  await ev(`[...document.querySelectorAll('button')].find(b=>b.textContent.includes('开始分诊')).click()`);
-  await sleep(200);
-  const np = await ev(`document.querySelectorAll('.txt p').length`);
-  ok(np === 24, '正文段落数=24', '实际 ' + np);
-  ok(await ev(`!document.querySelector('#clock').classList.contains('hide')`), '计时器出现');
-  await shot('02-read');
-  await sleep(2200);                                   // 读 ~2 秒，制造「跳读型」
-  await ev(`document.querySelector('#barbtn').click()`);
-  await sleep(200);
+  console.log('\n[2] 读（孩子视角不显示秒数）');
+  await ev(`[...document.querySelectorAll('button')].find(b=>/开始/.test(b.textContent)).click()`);
+  await sleep(300);
+  ok(await ev(`document.querySelector('#clock').classList.contains('hide')`), '倒计时数字已隐藏');
+  ok(await ev(`!!document.querySelector('#sf')`), '改用无数字的柔和进度条');
+  ok(await ev(`document.querySelectorAll('.txt .pn').length === 24`), '正文 24 段都有段号①②③');
+  ok(await ev(`!!document.querySelector('#quit')`), '有「读不下去了」出口');
+  await shot('k02-read');
+  await sleep(2000);
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
 
-  console.log('\n[3] 八道探针（故意错 L2 推断题，测跳读型判定）');
+  console.log('\n[3] 八道题（孩子视角无 L1/L2 标签）');
+  t = await txt();
+  ok(!/L1|L2|L3|探针|校准/.test(t), '题面不出现 L1/L2/探针/校准');
   for (let i = 0; i < 8; i++) {
     const view = await ev(`(D.dx.probe[${i}].view||'single')`);
-    if (view === 'multi') {
-      await ev(`document.querySelectorAll('.opt')[2].click();document.querySelectorAll('.opt')[3].click()`);
-    } else if (view === 'evid') {
-      await ev(`document.querySelectorAll('.opt')[0].click()`); await sleep(60);
-      await ev(`document.querySelectorAll('.sent')[1].click()`);
-    } else {
+    if (view === 'multi') await ev(`document.querySelectorAll('.opt')[2].click();document.querySelectorAll('.opt')[3].click()`);
+    else if (view === 'evid') { await ev(`document.querySelectorAll('.opt')[0].click()`); await sleep(60);
+                                await ev(`document.querySelectorAll('.sent')[1].click()`); }
+    else {
       const right = await ev(`D.dx.probe[${i}].ans`);
       const pick = (i >= 3 && i <= 5) ? (right + 1) % 4 : right;   // L2 三题全错
       await ev(`document.querySelectorAll('.opt')[${pick}].click()`);
     }
     await sleep(80);
-    ok(await ev(`!document.querySelector('#conf').classList.contains('hide')`), '第 ' + (i+1) + ' 题出现自信度自评');
-    await ev(`document.querySelectorAll('.conf button')[0].click()`);   // 全选「有把握」
-    await sleep(80);
+    if (i === 0) ok((await txt()).includes('心里有底'), '自评问法改成「心里有底吗」');
+    await ev(`document.querySelectorAll('.conf button')[0].click()`); await sleep(80);
   }
 
-  console.log('\n[4] 60 秒复述');
+  console.log('\n[4] 说一遍 → 再来一次 → 十个词');
   ok(await ev(`!!document.querySelector('#rt')`), '复述输入框');
-  await ev(`(()=>{const t=document.querySelector('#rt');t.value='我第一次值日，先扫地，遇到桌椅没对齐、垃圾在桌兜里的困难，然后陈可来了，她退着拖地，最后第二天早上什么也看不出来，我才明白干净是有人做的';t.dispatchEvent(new Event('input'))})()`);
+  await ev(`(()=>{const a=document.querySelector('#rt');a.value='我第一次值日，先扫地，遇到桌椅没对齐、垃圾在桌兜里的困难，然后陈可来了，她退着拖地，最后第二天早上什么也看不出来，我才明白干净是有人做的';a.dispatchEvent(new Event('input'))})()`);
   await sleep(150);
-  const hits = await ev(`document.querySelectorAll('#hits .chip.hit').length`);
-  ok(hits === 4, '复述四组关键词全命中', hits + '/4');
-  await shot('03-retell');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(200);
-
-  console.log('\n[5] B 卷重做');
-  const bjTxt = await ev(`document.querySelector('#main').textContent`);
-  ok(bjTxt.includes('这题再想一次') || bjTxt.includes('B 卷跳过'), 'B 卷页面');
+  ok(await ev(`document.querySelectorAll('#hits .chip.hit').length === 4`), '四组关键词全命中');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
   let guard = 0;
-  while (await ev(`document.querySelector('#main').textContent.includes('这题再想一次')`) && guard++ < 8) {
+  while ((await txt()).includes('这题再想一次') && guard++ < 8) {
+    if (guard === 1) ok((await txt()).includes('翻回去看'), '「再来一次」用孩子话说明可翻原文');
     const hasSent = await ev(`!!document.querySelector('.sent')`);
     await ev(`document.querySelectorAll('.opt')[0].click()`); await sleep(60);
     if (hasSent) { await ev(`document.querySelectorAll('.sent')[1].click()`); await sleep(60); }
-    const multi = await ev(`document.querySelectorAll('.opt[aria-pressed="true"]').length===1 && document.querySelector('#main').textContent.includes('请选两点')`);
-    if (multi) { await ev(`document.querySelectorAll('.opt')[1].click()`); await sleep(60); }
-    ok(!(await ev(`document.querySelector('#barbtn').disabled`)), 'B 卷第 ' + guard + ' 题可提交');
-    await ev(`document.querySelector('#barbtn').click()`); await sleep(150);
+    if ((await txt()).includes('请选两点')) { await ev(`document.querySelectorAll('.opt')[1].click()`); await sleep(60); }
+    await ev(`document.querySelector('#barbtn').click()`); await sleep(160);
   }
-  ok(guard > 0, 'B 卷确实有重做题', guard + ' 题');
-
-  console.log('\n[6] 词义速判');
+  ok(guard > 0, '错题进入「再来一次」', guard + ' 题');
   for (let i = 0; i < 10; i++) {
-    const has = await ev(`!!document.querySelector('.opt')&&document.querySelector('#main').textContent.includes('3 秒内选')`);
-    if (!has) break;
-    await ev(`document.querySelectorAll('.opt')[0].click()`);
-    await sleep(190);
+    if (!(await ev(`!!document.querySelector('.opt') && /别想太久|3 秒内选/.test(document.querySelector('#main').textContent)`))) break;
+    await ev(`document.querySelectorAll('.opt')[0].click()`); await sleep(190);
   }
-  await sleep(400);
-  const repTxt = await ev(`document.querySelector('#main').textContent`);
-  ok(repTxt.includes('三道闸门'), '进入诊断报告');
+  await sleep(500);
 
-  console.log('\n[7] 诊断报告');
-  const prof = await ev(`S.prof.name`);
-  ok(!!prof, '判出画像', prof);
-  ok(await ev(`document.querySelectorAll('.rules tr.hit').length===1`), '规则表只标一条判定');
-  ok(await ev(`document.querySelectorAll('.meter').length>=6`), '三闸门条 + 处方条');
-  ok(repTxt.includes('画像不给孩子看'), '家长/孩子话术对照');
-  const M = await ev(`JSON.stringify(metrics())`);
-  console.log('    实测 metrics:', M);
-  await shot('04-report');
-  await ev(`window.scrollTo(0,1400)`); await sleep(250); await shot('05-report-rules');
+  console.log('\n[5] 孩子看到的报告');
+  t = await txt();
+  ok(t.includes('具体做到了哪几件') && t.includes('今天最值得练的一件事'), '孩子版报告：做到了哪几件 ＋ 今天练哪一件');
+  ok(!/失校准型|跳读型|散点型|三道闸门|输入闸|加工闸|输出闸|判定|处方/.test(t), '不出现画像名／闸门／判定／处方');
+  ok(await ev(`document.querySelectorAll('.did').length === 5`), '五条具体行为');
+  ok(await ev(`document.querySelectorAll('[data-self]').length === 5`), '有「你自己觉得呢」自评');
+  await shot('k03-report');
+  await ev(`document.querySelectorAll('[data-self]')[1].click()`); await sleep(200);
+  ok((await txt()).includes('按你说的') || (await txt()).includes('一样'), '自评后给回应');
+  ok(await ev(`S.self === 1`), '自评被记录');
 
-  console.log('\n[8] 训练块');
-  await ev(`window.scrollTo(0,0);document.querySelector('#barbtn').click()`); await sleep(250);
-  ok(await ev(`document.querySelector('#main').textContent.includes('先押一个答案')`), '第 1 步 猜');
-  await ev(`document.querySelectorAll('.opt')[1].click()`); await sleep(150);
-  ok(await ev(`document.querySelectorAll('#peer .r').length===4`), '同龄人分布条');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(200);
-  ok(await ev(`document.querySelector('#main').textContent.includes('理解监控')`), '第 2 步 读（P7）');
-  await ev(`document.querySelectorAll('.txt p')[4].click()`); await sleep(120);
-  ok(await ev(`!document.querySelector('#why').classList.contains('hide')`), '标记后出现归类');
-  await ev(`document.querySelectorAll('[data-w]')[1].click()`); await sleep(120);
-  await shot('06-train-read');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(200);
-  ok(await ev(`document.querySelector('#main').textContent.includes('把题干圈开')`), '第 3 步 问（O1）');
-  // O1 反例：多点一个无关词 → 不应判过
+  console.log('\n[6] 同一份作答 → 大人那一层');
+  await ev(`document.querySelector('#toPro').click()`); await sleep(300);
+  t = await txt();
+  ok(t.includes('大人看到的那一层'), '大人页顶部标明两层关系');
+  ok(await ev(`document.querySelectorAll('.rules tr.hit').length === 1`), '判定规则只标一条');
+  ok(await ev(`document.querySelectorAll('.meter').length >= 6`), '三闸门 + 处方条');
+  ok(await ev(`!!S.prof.name`), '画像仍在内部算出', await ev(`S.prof.name`));
+  await shot('k04-report-pro');
+  await ev(`document.querySelector('#toKid').click()`); await sleep(300);
+  ok(await ev(`MODE === 'kid'`), '能切回孩子视角');
+  ok((await txt()).includes('今天最值得练的一件事'), '切回后仍是同一份作答的孩子版');
+
+  console.log('\n[7] 训练块（孩子视角无微技能编号）');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
+  ok((await txt()).includes('先押一个答案'), '第 1 步 猜');
+  await ev(`document.querySelectorAll('.opt')[1].click()`); await sleep(200);
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
+  t = await txt();
+  ok(t.includes('没看懂') && !/P7|理解监控/.test(t), '第 2 步：说「标一处没看懂」，不说 P7');
+  ok(await ev(`document.querySelectorAll('.txt .pn').length === 10`), '训练篇也有段号');
+  await ev(`document.querySelectorAll('.txt p')[4].click()`); await sleep(150);
+  await ev(`document.querySelectorAll('[data-w]')[1].click()`); await sleep(200);
+  ok(await ev(`!!document.querySelector('#kfb')`), '标完给一句正向回应');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
+  t = await txt();
+  ok(t.includes('要你干什么') && !/O1|O2|O4|题干拆解/.test(t), '第 3 步：孩子话，无 O1/O2/O4 编号');
   await ev(`(()=>{const s=D.tr.stem;const i=s.findIndex(x=>!x.k);document.querySelector('[data-s="'+i+'"]').click()})()`);
   await ev(`(()=>{const s=D.tr.stem;['range','verb','count'].forEach(k=>{const i=s.findIndex(x=>x.k===k);document.querySelector('[data-s="'+i+'"]').click()})})()`);
   await sleep(300);
-  ok(await ev(`S.tr.o1!==true && document.querySelector('#fb1').textContent.includes('还不对')`), 'O1 多点了无关词 → 判不过');
-  // 取消那个无关词 → 应判过
+  ok(await ev(`S.tr.o1 !== true`), '多点无关词 → 判不过');
   await ev(`(()=>{const s=D.tr.stem;const i=s.findIndex(x=>!x.k);document.querySelector('[data-s="'+i+'"]').click()})()`);
   await sleep(1100);
-  ok(await ev(`S.tr.o1===true`), 'O1 三样圈全判定通过');
-  ok(await ev(`document.querySelector('#main').textContent.includes('4 分，写几点')`), 'O2 关出现');
+  ok(await ev(`S.tr.o1 === true`), '三样齐 → 判过');
   await ev(`document.querySelector('[data-n="2"]').click()`); await sleep(900);
-  ok(await ev(`S.tr.o2===true`), 'O2 判定通过');
+  ok(await ev(`S.tr.o2 === true`), '4 分 → 2 点');
   await ev(`document.querySelectorAll('[data-p]')[0].click();document.querySelectorAll('[data-p]')[1].click()`); await sleep(1100);
-  ok(await ev(`S.tr.pts===true`), '两点选对');
-  ok(await ev(`!!document.querySelector('[data-v]')`), 'O4 证据句出现');
-  await shot('07-train-ask');
-  await ev(`document.querySelectorAll('[data-v]')[0].click()`); await sleep(200);
-  ok(await ev(`S.tr.o4===true`), 'O4 判定通过');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
-  ok(await ev(`document.querySelector('#main').textContent.includes('切块')`), '第 4 步 辨（P4）');
-  await ev(`document.querySelector('[data-c="2"]').click()`); await sleep(120);
-  await ev(`document.querySelector('[data-c="5"]').click()`); await sleep(400);
-  ok(await ev(`S.tr.p4===true`), 'P4 切块判定通过');
-  ok(await ev(`document.querySelectorAll('[data-t]').length===3`), '三个小标题输入框');
+  ok(await ev(`S.tr.pts === true`), '两点选对');
+  await shot('k05-train-ask');
+  await ev(`document.querySelectorAll('[data-v]')[0].click()`); await sleep(250);
+  ok(await ev(`S.tr.o4 === true`), '证据句挂对');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
+  ok((await txt()).includes('切成三块'), '第 4 步 辨');
+  await ev(`document.querySelector('[data-c="2"]').click()`); await sleep(150);
+  await ev(`document.querySelector('[data-c="5"]').click()`); await sleep(500);
+  ok(await ev(`S.tr.p4 === true`), '切块判过');
   await ev(`document.querySelectorAll('[data-t]').forEach((x,i)=>{x.value=['提出问题','三个原因','两面'][i];x.dispatchEvent(new Event('input'))})`);
-  await ev(`(()=>{const t=document.querySelector('#main1');t.value='童年的事记得牢，是因为第一次多、情绪强、被反复讲述';t.dispatchEvent(new Event('input'))})()`);
+  await ev(`(()=>{const a=document.querySelector('#main1');a.value='童年的事记得牢，是因为第一次多、情绪强、被反复讲述';a.dispatchEvent(new Event('input'))})()`);
   await sleep(250);
-  ok(await ev(`S.tr.p5===true`), 'P5 主旨压缩判定通过');
-  await shot('08-train-sort');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
-  ok(await ev(`document.querySelector('#main').textContent.includes('不可跳过')`), '第 5 步 写');
-  ok(await ev(`document.querySelector('#barbtn')&&document.querySelector('#bar').classList.contains('hide')`), '未达门槛时无法继续');
-  await ev(`(()=>{const t=document.querySelector('#w');t.value='我记得一年级掉了第一颗牙，可能是我妈讲得太多次了';t.dispatchEvent(new Event('input'))})()`);
+  ok(await ev(`S.tr.p5 === true`), '一句话主旨判过');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
+  t = await txt();
+  ok(t.includes('写一句') && !/效应量|ES≈/.test(t), '第 5 步：不对孩子讲效应量');
+  ok(await ev(`document.querySelector('#bar').classList.contains('hide')`), '不满 15 字不能收工');
+  await ev(`(()=>{const a=document.querySelector('#w');a.value='我记得一年级掉了第一颗牙，可能是我妈讲得太多次了';a.dispatchEvent(new Event('input'))})()`);
   await sleep(200);
-  ok(!(await ev(`document.querySelector('#bar').classList.contains('hide')`)), '满 15 字后可提交');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
+  ok(!(await ev(`document.querySelector('#bar').classList.contains('hide')`)), '满 15 字可收工');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
 
-  console.log('\n[9] 收尾与面板');
-  const dn = await ev(`document.querySelector('.big .n').textContent`);
-  ok(dn === '6/6', '今日 6 项微技能全达标', dn);
-  await shot('09-train-done');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
-  ok(await ev(`document.querySelectorAll('.sk').length===17`), '微技能面板 17 项');
-  ok(await ev(`document.querySelectorAll('.sk .st.on').length===6`), '6 项显示已达标');
-  await shot('10-skills');
-  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
-  ok(await ev(`document.querySelectorAll('.tl .ph').length===4`), '12 周疗程四阶段');
-  await shot('11-plan');
+  console.log('\n[8] 孩子看到的收尾');
+  t = await txt();
+  ok((await ev(`document.querySelector('.big .n').textContent`)) === '今天读完了', '收尾是「今天读完了」而不是分数');
+  ok(await ev(`document.querySelectorAll('.did').length === 7`), '七件具体做到的事');
+  ok(await ev(`document.querySelectorAll('.did .m:not(.no)').length === 7`), '七件全做到');
+  ok(!/P7|O1|O2|O4|P4|P5|微技能|达标/.test(t), '不出现微技能编号与「达标」');
+  ok(t.includes('断一天也不清零'), '明确「断了能接上」');
+  await shot('k06-train-done');
+
+  console.log('\n[9] 大人那一层：面板与疗程');
+  await ev(`document.querySelector('#toPro').click()`); await sleep(300);
+  ok(await ev(`MODE === 'pro'`), '进入大人视角');
+  ok(await ev(`document.querySelectorAll('.sk').length === 17`), '17 个微技能');
+  ok(await ev(`document.querySelectorAll('.sk .st.on').length === 6`), '6 项标已达标');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
+  ok(await ev(`document.querySelectorAll('.tl .ph').length === 4`), '12 周疗程四阶段');
+  await shot('k07-plan');
 
   console.log('\n[10] 判定规则单元测试（注入极端数据）');
   const cases = [
@@ -198,6 +207,12 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const got = await ev(setup + `;D.profiles.find(p=>p.k===judge(metrics()).key).name`);
     ok(got === want, '判定 → ' + want, got === want ? '' : '得到 ' + got);
   }
+  console.log('\n[11] 孩子版文案完整性');
+  for (const k of ['slow','skim','scatter','copy','miscal','base','even']) {
+    const has = await ev(`(()=>{const p=D.profiles.find(x=>x.k==='${k}');return !!(p.kid&&p.kidwhy&&p.kid.length>6&&p.kidwhy.length>10)})()`);
+    ok(has, '画像 ' + k + ' 有孩子版说法');
+  }
+  ok(pageErrors.length === 0, '全程无页面异常', pageErrors[0] || '');
 
   console.log('\n' + (fails.length ? '❌ 失败 ' + fails.length + ' 项：\n - ' + fails.join('\n - ') : '✅ 全部通过'));
   ws.close();
