@@ -61,6 +61,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(300);
   ok(await ev(`document.querySelector('#clock').classList.contains('hide')`), '倒计时数字已隐藏');
   ok(await ev(`!!document.querySelector('#sf')`), '改用无数字的柔和进度条');
+  ok(await ev(`[...document.querySelectorAll('.steps .lb')].map(x=>x.textContent).join('/')`) === '读一篇/答八题/说一遍/再来一次/十个词',
+     '步骤条有名字，不是五根没名字的横线');
+  ok(await ev(`document.querySelectorAll('.steps div')[0].classList.contains('on')`), '当前这一步高亮');
   ok(await ev(`document.querySelectorAll('.txt .pn').length === 24`), '正文 24 段都有段号①②③');
   ok(await ev(`!!document.querySelector('#quit')`), '有「读不下去了」出口');
   await shot('k02-read');
@@ -82,7 +85,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     }
     await sleep(80);
     if (i === 0) ok((await txt()).includes('心里有底'), '自评问法改成「心里有底吗」');
-    await ev(`document.querySelectorAll('.conf button')[0].click()`); await sleep(80);
+    await ev(`document.querySelectorAll('.conf button')[0].click()`); await sleep(100);
+    if (i === 2) {                                     // 返回上一题：能改，且上次选的还在
+      ok(await ev(`!document.querySelector('#back').classList.contains('hide')`), '题目页有「‹ 上一步」');
+      await ev(`document.querySelector('#back').click()`); await sleep(220);
+      ok((await txt()).includes('这题你刚才答过'), '返回上一题：提示可以改');
+      ok(await ev(`document.querySelectorAll('.opt[aria-pressed="true"]').length >= 1`), '返回上一题：上次的选择还在');
+      ok(await ev(`document.querySelectorAll('.conf button[aria-pressed="true"]').length === 1`), '返回上一题：自评也恢复了');
+      await ev(`document.querySelectorAll('.conf button')[0].click()`); await sleep(160);
+      ok((await ev(`document.querySelector('#brand').textContent`)).includes('第 4 题'), '改完确认后回到原来的进度');
+    }
   }
 
   console.log('\n[4] 说一遍 → 再来一次 → 十个词');
@@ -142,6 +154,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await ev(`document.querySelectorAll('[data-w]')[1].click()`); await sleep(200);
   ok(await ev(`!!document.querySelector('#kfb')`), '标完给一句正向回应');
   await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
+  ok(await ev(`[...document.querySelectorAll('.steps .lb')].map(x=>x.textContent).join('')`) === '猜读问辨写', '训练块步骤条：猜读问辨写');
+  await ev(`document.querySelector('#back').click()`); await sleep(250);
+  ok(await ev(`!!document.querySelector('.txt p.mark')`), '返回第 2 步：标记还在');
+  ok(await ev(`document.querySelectorAll('[data-w][aria-pressed="true"]').length === 1`), '返回第 2 步：归类也还在');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
   t = await txt();
   ok(t.includes('一道题在问什么') && !/O1|O2|O4|题干拆解|指令动词|范围限定|数量限定/.test(t),
      '第 3 步：白话标题，无 O1／指令动词／范围限定等黑话');
@@ -162,6 +179,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   }
   ok(await ev(`S.tr.o1 === true`), '三件按顺序填齐 → 判过');
   ok(await ev(`document.querySelectorAll('.slot.done').length === 3`), '三个空都填上了');
+  ok(await ev(`!!document.querySelector('#g1')`), '第 ② 关出现了');
+  ok((await txt()).includes('这一关过了，下面是第 ② 关'), '明说「下面是第 ② 关」');
+  ok(await ev(`[...document.querySelectorAll('#fb1 ~ button, .cta.ghost')].some(b=>/去第 ② 关/.test(b.textContent))`), '给了「去第 ② 关」按钮');
+  ok(await ev(`document.querySelector('#g0 .pill').textContent.includes('完成')`), '第 ① 关标成「✓ 完成」');
+  ok(await ev(`document.querySelector('#g1 .pill').textContent.includes('现在')`), '第 ② 关标成「现在这关」');
   await ev(`document.querySelector('[data-n="2"]').click()`); await sleep(900);
   ok(await ev(`S.tr.o2 === true`), '4 分 → 2 点');
   await ev(`document.querySelectorAll('[data-p]')[0].click();document.querySelectorAll('[data-p]')[1].click()`); await sleep(1100);
@@ -171,6 +193,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok(await ev(`S.tr.o4 === true`), '证据句挂对');
   await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
   ok((await txt()).includes('切成三块'), '第 4 步 辨');
+  await ev(`document.querySelector('#back').click()`); await sleep(280);
+  ok(await ev(`document.querySelectorAll('.slot.done').length === 3 && !!document.querySelector('#g3')`), '返回第 3 步：四关进度全在');
+  ok(await ev(`document.querySelectorAll('.sent[aria-pressed="true"]').length === 1`), '返回第 3 步：选过的证据句还在');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(280);
+  ok((await txt()).includes('切成三块'), '再前进回第 4 步');
   await ev(`document.querySelector('[data-c="2"]').click()`); await sleep(150);
   await ev(`document.querySelector('[data-c="5"]').click()`); await sleep(500);
   ok(await ev(`S.tr.p4 === true`), '切块判过');

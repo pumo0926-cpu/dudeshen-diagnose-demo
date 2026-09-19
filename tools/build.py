@@ -170,9 +170,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .back{font-size:13.5px;color:var(--accent);flex:0 0 auto}
 .clock{font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink-2);background:var(--surface-2);border-radius:999px;padding:3px 10px;flex:0 0 auto}
 .clock.hot{background:var(--bad-wash);color:var(--bad);font-weight:620}
-.steps{display:flex;gap:4px;margin:9px 0 0}
-.steps div{flex:1;height:3px;border-radius:2px;background:var(--grid)}
-.steps div.on{background:var(--accent)}
+.steps{display:flex;gap:5px;margin:10px 0 2px}
+.steps div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.steps .bar{width:100%;height:3px;border-radius:2px;background:var(--grid)}
+.steps .lb{font-size:10.5px;color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.steps div.past .bar{background:var(--accent-soft)}
+.steps div.past .lb{color:var(--ink-2)}
+.steps div.on .bar{background:var(--accent);height:4px;margin-top:-.5px}
+.steps div.on .lb{color:var(--accent);font-weight:680}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin:12px 0}
 .card.tight{padding:13px 15px}
 .eyebrow{font-size:11px;letter-spacing:.14em;color:var(--ink-muted);margin:0 0 7px;text-transform:uppercase}
@@ -205,6 +210,7 @@ p{margin:0 0 10px;font-size:15px;color:var(--ink-2)}
 .conf{display:flex;gap:8px;margin:14px 0 0}
 .conf button{flex:1;border:1px solid var(--border);background:var(--surface);border-radius:11px;padding:11px 0;font-size:14px;color:var(--ink-2);text-align:center}
 .conf button:active{background:var(--wash)}
+.conf button[aria-pressed="true"]{border-color:var(--accent);background:var(--wash);color:var(--ink);font-weight:620}
 .cta{display:block;width:100%;background:var(--accent);color:#fff;font-size:15.5px;font-weight:620;padding:13px;border-radius:12px;margin:16px 0 0;text-align:center}
 .cta[disabled]{opacity:.35}
 .cta.ghost{background:var(--surface);color:var(--accent);border:1px solid var(--accent-soft)}
@@ -348,16 +354,20 @@ function runClock(dir, from, limit, onEnd){
 function setTop(title, sub, backTo, withMode){
   $('#brand').innerHTML = esc(title) + (sub ? '<s>' + esc(sub) + '</s>' : '');
   const b = $('#back'); b.classList.toggle('hide', !backTo);
-  b.onclick = () => go(backTo);
+  b.textContent = '‹ 上一步';
+  b.onclick = () => { if (typeof backTo === 'function') backTo(); else go(backTo); };
   const m = $('#mode');
   m.classList.toggle('hide', !withMode);
   m.innerHTML = K('给大人看 ›', '<b>大人视角</b> · 回到孩子视角');
   m.onclick = () => { MODE = MODE === 'kid' ? 'pro' : 'kid'; go(CUR[0], CUR[1]); };
 }
-function dots(n, total){
-  if (!total) { stp.classList.add('hide'); return; }
+const DXSTEPS = ['读一篇', '答八题', '说一遍', '再来一次', '十个词'];
+const TRSTEPS2 = ['猜', '读', '问', '辨', '写'];
+function steps(list, idx){
+  if (!list) { stp.classList.add('hide'); return; }
   stp.classList.remove('hide');
-  stp.innerHTML = Array.from({length: total}, (_, i) => '<div class="' + (i < n ? 'on' : '') + '"></div>').join('');
+  stp.innerHTML = list.map((t, i) => '<div class="' + (i === idx ? 'on' : (i < idx ? 'past' : '')) + '">'
+    + '<span class="bar"></span><span class="lb">' + esc(t) + '</span></div>').join('');
 }
 function foot(){ return '<div class="foot">读得深 · 三道闸门 Demo · 2026-09<br>'
   + '本页数据只存在于你的浏览器里，不上传、不保存<br>'
@@ -369,7 +379,12 @@ function cta(txt, fn, ghost){
   barbtn.disabled = false; barbtn.onclick = fn;
 }
 function noCta(){ bar.classList.add('hide'); }
-function paint(html, after){ main.innerHTML = html; window.scrollTo(0, 0); after && after(); }
+function paint(html, after, keep){
+  const y = window.scrollY;
+  main.innerHTML = html;
+  window.scrollTo(0, keep ? y : 0);
+  after && after();
+}
 const CN = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕';
 const paras = (arr, cls, num) => arr.map((p, i) => '<p class="' + (cls || '') + '" data-i="' + i + '">'
   + (num ? '<span class="pn">' + (CN[i] || (i+1)) + '</span>' : '')
@@ -377,7 +392,7 @@ const paras = (arr, cls, num) => arr.map((p, i) => '<p class="' + (cls || '') + 
 
 /* ══ 0. 封面 ══ */
 function scIntro(){
-  stopClock(); dots(0, 0); setTop(K('读得深', '三道闸门'), K('初一', '初一分诊 Demo'), null, true); noCta();
+  stopClock(); steps(null); setTop(K('读得深', '三道闸门'), K('初一', '初一分诊 Demo'), null, true); noCta();
   if (MODE === 'kid') return scIntroKid();
   paint('<div class="hero"><span class="tag">DEMO · 初一（七年级上）</span>'
    + '<h1>先定位，<br>再施治。</h1>'
@@ -420,7 +435,7 @@ function scIntroKid(){
 
 /* ══ 1. 限时默读 ══ */
 function scRead(){
-  dots(1, 5); setTop(K('先读一遍', '① 限时默读'), D.dx.title, K(null, 'intro'));
+  steps(DXSTEPS, 0); setTop(K('先读一遍', '① 限时默读'), D.dx.title, 'intro');
   const LIMIT = 360;
   paint(K('<div class="card tight"><div class="eyebrow">第 1 件事</div>'
         + '<h2 class="sec">' + esc(D.dx.title) + '</h2>'
@@ -449,13 +464,18 @@ function scRead(){
 function scQ(i){
   i = i || 0; stopClock();
   if (i >= D.dx.probe.length) { go('retell'); return; }
-  const p = D.dx.probe[i]; dots(2, 5); setTop(K('第 ' + (i+1) + ' 题 / 8', '② 探针 ' + (i+1) + '/8'), K('', p.tag), null);
-  let pick = (p.view === 'multi') ? [] : null, sent = null, stage = 0;
+  const p = D.dx.probe[i]; steps(DXSTEPS, 1);
+  setTop(K('第 ' + (i+1) + ' 题 / 8', '② 探针 ' + (i+1) + '/8'), K('', p.tag),
+         i > 0 ? (() => go('q', i - 1)) : (() => go('read')));
+  const prev = S.ans[i];
+  let pick = prev ? prev.pick : ((p.view === 'multi') ? [] : null);
+  let sent = prev ? prev.sent : null;
   const optHtml = p.opts.map((o, k) => '<button class="opt" data-k="' + k + '">' + o + '</button>').join('');
   const evidHtml = '<div id="ev" class="hide"><p class="sub" style="margin:14px 0 8px">'
     + K('那从文章里<b>点一句</b>出来，证明你说的对：', '从下面六句里<b>点一句</b>能支持你的判断的原文：') + '</p>'
     + D.dx.evid.map((e, k) => '<button class="sent" data-e="' + k + '">' + esc(e.t) + '</button>').join('') + '</div>';
-  paint('<div class="qh">' + K('', '<small>' + p.layer + ' · ' + p.tag + '</small>') + p.q + '</div>'
+  paint((prev ? '<div class="fb" style="margin:12px 0 0">这题你刚才答过，可以改：改完再点一次下面的「' + K('有底', '有把握') + ' / ' + K('说不好', '不确定') + '」就行。</div>' : '')
+   + '<div class="qh">' + K('', '<small>' + p.layer + ' · ' + p.tag + '</small>') + p.q + '</div>'
    + optHtml + (p.view === 'evid' ? evidHtml : '')
    + '<div id="conf" class="hide"><p class="sub" style="margin:18px 0 6px">'
    + K('这题，你心里有底吗？', '这题你有把握吗？<b>（必答，用来算校准度）</b>') + '</p>'
@@ -463,6 +483,16 @@ function scQ(i){
    + '<button data-c="0">' + K('说不好', '不确定') + '</button></div></div>'
    + '<p class="note">' + K('先不说对错，最后一起讲。', '分诊阶段不显示对错。') + '</p>', () => {
     noCta();
+    if (prev) {                                   // 返回改答案：把上次选的恢复出来
+      const sel = (p.view === 'multi') ? pick : [pick];
+      main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', sel.includes(+x.dataset.k)));
+      if (p.view === 'evid') {
+        $('#ev').classList.remove('hide');
+        main.querySelectorAll('.sent').forEach(x => x.setAttribute('aria-pressed', +x.dataset.e === sent));
+      }
+      $('#conf').classList.remove('hide');
+      main.querySelectorAll('.conf button').forEach(x => x.setAttribute('aria-pressed', +x.dataset.c === prev.conf));
+    }
     main.querySelectorAll('.opt').forEach(b => b.onclick = () => {
       const k = +b.dataset.k;
       if (p.view === 'multi') {
@@ -495,7 +525,7 @@ function scQ(i){
 
 /* ══ 3. 60 秒复述 ══ */
 function scRetell(){
-  dots(3, 5); setTop(K('说一遍', '③ 60 秒复述'), K('一分钟', '不看原文'), null);
+  steps(DXSTEPS, 2); setTop(K('说一遍', '③ 60 秒复述'), K('一分钟', '不看原文'), () => go('q', D.dx.probe.length - 1));
   paint('<div class="card tight"><div class="eyebrow">' + K('第 3 件事', '环节三 / 五') + '</div>'
    + '<h2 class="sec">合上文章，说一遍</h2>'
    + '<p class="sub">' + K('别翻回去看。想到哪写到哪，写不完整也没关系。',
@@ -522,9 +552,9 @@ function scRetell(){
 
 /* ══ 4. B 卷重做 ══ */
 function scBJ(){
-  stopClock(); dots(4, 5); setTop(K('再来一次', '④ B 卷重做'), K('这回能翻回去看', '可回看原文'), null);
+  stopClock(); steps(DXSTEPS, 3); setTop(K('再来一次', '④ B 卷重做'), K('这回能翻回去看', '可回看原文'), () => go('retell'));
   const wrong = S.ans.map((a, i) => a && !a.right ? i : -1).filter(i => i >= 0);
-  S.bj.redone = wrong.length;
+  S.bj.redone = wrong.length; S.bj.fixed = 0;   // 允许返回重做，重入时清零免得重复计数
   if (!wrong.length) {
     paint(K('<div class="card"><div class="eyebrow">第 4 件事</div><h2 class="sec">刚才全对，这步跳过</h2>'
           + '<p>这一步本来是给没答对的题留的第二次机会。你没有，那就直接往下走。</p></div>',
@@ -578,7 +608,7 @@ function scBJ(){
 
 /* ══ 5. 词义速判 ══ */
 function scVocab(){
-  dots(5, 5); setTop(K('十个词', '⑤ 词义速判'), K('一个 3 秒', '每题 3 秒'), null); noCta();
+  steps(DXSTEPS, 4); setTop(K('十个词', '⑤ 词义速判'), K('一个 3 秒', '每题 3 秒'), () => go('bj')); noCta();
   let i = 0; S.vocab.right = 0;
   const one = () => {
     if (i >= D.dx.vocab.length) { stopClock(); go('report'); return; }
@@ -636,7 +666,7 @@ function judge(m){
   return {rows, key: first ? first.k : 'even'};
 }
 function scReport(){
-  stopClock(); dots(0, 0); setTop(K('今天这一篇', '诊断报告'), K('读完了', 'Demo'), null, true);
+  stopClock(); steps(null); setTop(K('今天这一篇', '诊断报告'), K('读完了', 'Demo'), null, true);
   const m = metrics(), j = judge(m);
   S.prof = D.profiles.find(p => p.k === j.key);
   if (MODE === 'kid') return scReportKid(m);
@@ -717,6 +747,7 @@ function scReportKid(m){
    + self.map((t, i) => '<button class="opt" data-self="' + i + '">' + t + '</button>').join('')
    + '<div id="sfb"></div></div>'
    + '<div class="kidfoot">今天这篇到这儿就结束了，不用再往下刷。<br>'
+   + '<a href="javascript:void(0)" id="redo">想重做一遍？从头再来 ›</a><br>'
    + '<a href="javascript:void(0)" id="toPro">这份结果大人看到的是什么样 ›</a></div>', () => {
     main.querySelectorAll('[data-self]').forEach(b => b.onclick = () => {
       S.self = +b.dataset.self;
@@ -729,6 +760,7 @@ function scReportKid(m){
     });
     cta('开始今天的 15 分钟', () => go('train'));
     $('#toPro').onclick = () => { MODE = 'pro'; go('report'); };
+    $('#redo').onclick = () => location.reload();
   });
 }
 
@@ -737,7 +769,9 @@ const TSTEPS = ['猜','读','问','辨','写'];
 function scTrain(k){
   k = k || 0; stopClock();
   if (k >= 5) { go('tdone'); return; }
-  dots(k + 1, 5); setTop(TSTEPS[k] + '　第 ' + (k+1) + ' 步 / 5', D.tr.title, null);
+  steps(TRSTEPS2, k);
+  setTop(TSTEPS[k] + '　第 ' + (k+1) + ' 步 / 5', D.tr.title,
+         k > 0 ? (() => go('train', k - 1)) : (() => go('report')));
   [tGuess, tRead, tAsk, tSort, tWrite][k]();
 }
 function stepHead(min, title, codes, desc){
@@ -747,57 +781,90 @@ function stepHead(min, title, codes, desc){
    + '<p class="sub" style="margin:0">' + desc + '</p></div>';
 }
 function tGuess(){
-  const g = D.tr.guess; let pick = null;
+  let pick = (S.tr.guess === undefined) ? null : S.tr.guess;
+  const g = D.tr.guess;
+  const peerHTML = () => '<p class="sub" style="margin:0 0 8px">' + K('别人都押了什么', '同龄人怎么押的') + '（模拟数据）</p>'
+    + g.options.map((o, i) => '<div class="r ' + (i === pick ? 'me' : '') + '">'
+      + '<span style="flex:0 0 96px;font-size:12px;color:var(--ink-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(o) + '</span>'
+      + '<span class="bar"><i style="width:' + g.peer[i] + '%"></i></span><span class="v">' + g.peer[i] + '%</span></div>').join('');
   paint(stepHead('第 1 步 · 约 1 分钟', '', '', K('先押一个答案。读的时候你就有事可做了——这题不算对错。',
         '先押一个答案，读的时候就有事可做——这一步不判对错。'))
    + '<div class="qh">' + esc(g.q) + '</div>'
-   + g.options.map((o, i) => '<button class="opt" data-k="' + i + '">' + esc(o) + '</button>').join('')
-   + '<div id="peer" class="peer hide" style="margin-top:14px"></div>', () => {
+   + g.options.map((o, i) => '<button class="opt" data-k="' + i + '"' + (i === pick ? ' aria-pressed="true"' : '') + '>' + esc(o) + '</button>').join('')
+   + '<div id="peer" class="peer ' + (pick === null ? 'hide' : '') + '" style="margin-top:14px">' + (pick === null ? '' : peerHTML()) + '</div>', () => {
     noCta();
+    if (pick !== null) cta('开始读', () => go('train', 1));
     main.querySelectorAll('.opt').forEach(b => b.onclick = () => {
-      pick = +b.dataset.k;
+      pick = +b.dataset.k; S.tr.guess = pick;
       main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', +x.dataset.k === pick));
-      $('#peer').classList.remove('hide');
-      $('#peer').innerHTML = '<p class="sub" style="margin:0 0 8px">' + K('别人都押了什么', '同龄人怎么押的') + '（模拟数据）</p>'
-        + g.options.map((o, i) => '<div class="r ' + (i === pick ? 'me' : '') + '">'
-          + '<span style="flex:0 0 96px;font-size:12px;color:var(--ink-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(o) + '</span>'
-          + '<span class="bar"><i style="width:' + g.peer[i] + '%"></i></span><span class="v">' + g.peer[i] + '%</span></div>').join('');
-      S.tr.guess = pick; cta('开始读', () => go('train', 1));
+      $('#peer').classList.remove('hide'); $('#peer').innerHTML = peerHTML();
+      cta('开始读', () => go('train', 1));
     });
   });
 }
 function tRead(){
+  const marked = S.tr.mark !== undefined;
   paint(stepHead('第 2 步 · 约 5 分钟', '标一处你没看懂的地方', 'P7 理解监控',
         K('随便哪一段都行，<b>必须标一处</b>。「全都懂」反而最危险——不懂的地方你自己不知道。',
           '读的时候<b>必须标出一处「我这里没懂」</b>——全篇都懂，本身就是一个失校准信号。'))
    + '<div class="txt">' + paras(D.tr.paras, 'pick', true) + '</div>'
-   + '<div id="why" class="hide"><p class="sub" style="margin:12px 0 6px">'
+   + '<div id="why" class="' + (marked ? '' : 'hide') + '"><p class="sub" style="margin:12px 0 6px">'
    + K('是哪种不懂？', '这一处是哪种不懂？') + '</p>'
-   + ['词不懂','关系不懂（句与句之间）','背景不懂'].map((t, i) => '<button class="opt" data-w="' + i + '">' + t + '</button>').join('') + '</div>', () => {
+   + ['词不懂','关系不懂（句与句之间）','背景不懂'].map((t, i) => '<button class="opt" data-w="' + i + '"'
+       + (S.tr.markWhy === i ? ' aria-pressed="true"' : '') + '>' + t + '</button>').join('')
+   + (S.tr.markWhy !== undefined ? '<div id="kfb" class="fb ok">标出来就行。这一处先记着，等会儿答题时再回来看一眼。</div>' : '')
+   + '</div>', () => {
     noCta();
-    main.querySelectorAll('.txt p').forEach(p => p.onclick = () => {
+    if (marked) { const el = main.querySelectorAll('.txt p')[S.tr.mark]; if (el) el.classList.add('mark'); }
+    if (S.tr.markWhy !== undefined) cta('去答题', () => go('train', 2));
+    main.querySelectorAll('.txt p').forEach(p2 => p2.onclick = () => {
       main.querySelectorAll('.txt p').forEach(x => x.classList.remove('mark'));
-      p.classList.add('mark'); S.tr.mark = +p.dataset.i;
+      p2.classList.add('mark'); S.tr.mark = +p2.dataset.i;
       $('#why').classList.remove('hide'); $('#why').scrollIntoView({behavior:'smooth', block:'center'});
     });
     main.querySelectorAll('[data-w]').forEach(b => b.onclick = () => {
       S.tr.markWhy = +b.dataset.w;
-      if (MODE === 'kid' && !$('#kfb')) $('#why').insertAdjacentHTML('beforeend',
-        '<div id="kfb" class="fb ok">标出来就行。这一处先记着，等会儿答题时再回来看一眼。</div>');
       main.querySelectorAll('[data-w]').forEach(x => x.setAttribute('aria-pressed', +x.dataset.w === S.tr.markWhy));
+      if (!$('#kfb')) $('#why').insertAdjacentHTML('beforeend',
+        '<div id="kfb" class="fb ok">标出来就行。这一处先记着，等会儿答题时再回来看一眼。</div>');
       cta('去答题', () => go('train', 2));
     });
   });
 }
+
+/* 四关做成一张张带状态的卡：哪关完了、现在哪关、还有几关，一眼看得见；
+   过关后自动滚到下一关，并给一个「去第 ② 关」的按钮——不靠用户自己发现页面下面多了东西。 */
+const GN = '①②③④';
+function gateHead(k, title, code, state){
+  return '<div class="eyebrow">第 ' + GN[k] + ' 关' + (MODE === 'pro' && code ? ' · ' + code : '')
+   + '<span class="pill ' + (state === 2 ? 'ok' : (state === 1 ? 'on' : '')) + '">'
+   + (state === 2 ? '✓ 完成' : (state === 1 ? '现在这关' : '还没开')) + '</span></div>'
+   + '<h3 class="sub3" style="margin-top:0">' + title + '</h3>';
+}
+const goGate = k => '<button class="cta ghost" style="margin-top:10px" '
+  + 'onclick="document.getElementById(\'g' + k + '\').scrollIntoView({behavior:\'smooth\',block:\'start\'})">'
+  + '去第 ' + GN[k] + ' 关 ›</button>';
+
 function tAsk(){
-  let phase = 0, cnt = null, pts = [], ev = null;
-  let slotIdx = 0, filled = [null, null, null], used = [];   // 三件事一件一件填，不再让人「点出三样」
+  const st = S.tr.ask = S.tr.ask || {phase:0, cnt:null, pts:[], ev:null, slotIdx:0, filled:[null,null,null], used:[]};
   const stem = D.tr.stem, SL = D.tr.slots;
-  const render = () => {
+  const fb2 = c => '<div class="fb ' + (c === 2 ? 'ok' : 'bad') + '">' + (c === 2
+      ? '✓ 4 分 → 2 点。' + K('老师是按「点」给分的，不是按你写得多长给。', '踩点给分：要点数由分值决定，不由你写了多长决定。')
+      : K('4 分一般拆成 <b>2 点</b>写。只写 1 点，等于先丢一半分。', '4 分题按 2 分一点拆，应是 <b>2 点</b>。只写 1 点，先丢一半。'))
+    + '</div>';
+  const fb3 = ok => '<div class="fb ' + (ok ? 'ok' : 'bad') + '">' + (ok
+      ? '✓ 两点正好是同一个机制的两面——这就是第三个原因被放在最后的理由。'
+      : '再想想：作者把第三个原因放最后，是因为它<b>同时</b>解释了「为什么牢」和「为什么不准」。') + '</div>';
+  const fb4 = e => '<div class="fb ' + (e.ok ? 'ok' : 'bad') + '">' + (e.ok ? '✓ ' : '✗ ') + esc(e.why) + '</div>';
+  const state = k => {
+    const done = [st.slotIdx >= SL.length, st.cnt !== null, st.pts.length === 2, st.ev !== null];
+    if (done[k]) return 2;
+    return (k === 0 || done[k-1]) ? 1 : 0;
+  };
+  const render = (keep) => {
     let h = stepHead('第 3 步 · 约 4 分钟', '把题看懂，再动笔', 'O1 题干拆解 · O2 分值→要点数 · O4 证据句',
-        K('大题丢分，一多半丢在没看清题目要什么。', '中考主观题的三个对接口，全部可判定。'));
-    h += '<div class="card"><div class="eyebrow">' + K('第 ① 关', '第 ① 关 · O1') + '</div>'
-      + '<h3 class="sub3" style="margin-top:0">一道题在问什么，其实就三件事</h3>'
+        K('这一步有四小关，做完一关下面自动出现下一关。', '中考主观题的三个对接口，全部可判定。四关顺序推进。'));
+    h += '<div class="card" id="g0">' + gateHead(0, '一道题在问什么，其实就三件事', 'O1', state(0))
       + '<p class="sub">下面这句是题目。把它拆开，看它到底要你做什么。</p>'
       + '<div class="notes" style="margin:0 0 10px">' + esc(D.tr.stemText) + '</div>'
       + '<details class="ex"><summary>没做过？先看一个例子 ›</summary><div class="in">'
@@ -806,41 +873,50 @@ function tAsk(){
           + ' <span style="color:var(--ink-muted)">←&nbsp;' + esc(m[1]) + '</span></div>').join('')
       + '<p style="margin:8px 0 0;font-size:12.5px;color:var(--ink-muted)">每道大题都能这么拆。下面轮到你。</p>'
       + '</div></details>'
-      + SL.map((sl, i) => '<div class="slot ' + (filled[i] ? 'done' : (i === slotIdx ? 'on' : '')) + '">'
+      + SL.map((sl, i) => '<div class="slot ' + (st.filled[i] ? 'done' : (i === st.slotIdx ? 'on' : '')) + '">'
           + '<b>' + (i+1) + '. ' + esc(sl.q) + '？<i>' + esc(sl.hint) + '</i></b>'
-          + '<span class="v">' + (filled[i] ? esc(filled[i]) : (i === slotIdx ? '点下面的词' : '　')) + '</span></div>').join('')
+          + '<span class="v">' + (st.filled[i] ? esc(st.filled[i]) : (i === st.slotIdx ? '点下面的词' : '　')) + '</span></div>').join('')
       + '<div class="chips" id="stem" style="margin-top:10px">'
       + stem.map((t, i) => '<button class="chip" data-s="' + i + '"'
-          + (used.includes(i) ? ' disabled aria-pressed="true"' : '') + '>' + esc(t.t) + '</button>').join('')
+          + (st.used.includes(i) ? ' disabled aria-pressed="true"' : '') + '>' + esc(t.t) + '</button>').join('')
       + '</div><div id="fb1"></div></div>';
-    if (phase >= 1) h += '<div class="card"><div class="eyebrow">' + K('第 ② 关', '第 ② 关 · O2') + '</div>'
-      + '<h3 class="sub3" style="margin-top:0">4 分，写几点？</h3>'
-      + [1,2,3,4].map(n => '<button class="opt" data-n="' + n + '" style="display:inline-block;width:auto;margin-right:8px">' + n + ' 点</button>').join('')
-      + '<div id="fb2"></div></div>';
-    if (phase >= 2) h += '<div class="card"><div class="eyebrow">第 ③ 关</div><h3 class="sub3" style="margin-top:0">' + esc(D.tr.pts.q) + '</h3>'
+    if (st.phase >= 1) h += '<div class="card" id="g1">' + gateHead(1, '4 分，写几点？', 'O2', state(1))
+      + [1,2,3,4].map(n => '<button class="opt' + (st.cnt === n ? (n === 2 ? ' right' : ' wrong') : '') + '"'
+          + ' data-n="' + n + '" style="display:inline-block;width:auto;margin-right:8px">' + n + ' 点</button>').join('')
+      + '<div id="fb2">' + (st.cnt !== null ? fb2(st.cnt) : '') + '</div></div>';
+    if (st.phase >= 2) h += '<div class="card" id="g2">' + gateHead(2, esc(D.tr.pts.q), '', state(2))
       + '<p class="sub">题目让你「结合第④⑤段」——先回去把那两段看一眼，再选。</p>'
-      + D.tr.pts.opts.map((o, i) => '<button class="opt" data-p="' + i + '">' + esc(o) + '</button>').join('') + '<div id="fb3"></div></div>';
-    if (phase >= 3) h += '<div class="card"><div class="eyebrow">' + K('第 ④ 关', '第 ④ 关 · O4') + '</div>'
-      + '<h3 class="sub3" style="margin-top:0">' + K('给你选的两点，各找一句原文撑着', '给你的要点挂一句原文') + '</h3>'
+      + D.tr.pts.opts.map((o, i) => '<button class="opt" data-p="' + i + '"'
+          + (st.pts.includes(i) ? ' aria-pressed="true"' : '') + '>' + esc(o) + '</button>').join('')
+      + '<div id="fb3">' + (st.pts.length === 2 ? fb3(D.tr.pts.ans.every(a => st.pts.includes(a))) : '') + '</div></div>';
+    if (st.phase >= 3) h += '<div class="card" id="g3">' + gateHead(3, K('给你选的两点，各找一句原文撑着', '给你的要点挂一句原文'), 'O4', state(3))
       + '<p class="sub">' + K('找不到句子撑的那一点，多半不是答案。', '挂不住的那一点，八成不是答案。') + '</p>'
-      + D.tr.evid.map((e, i) => '<button class="sent" data-v="' + i + '">' + esc(e.t) + '</button>').join('') + '<div id="fb4"></div></div>';
-    paint(h, wire);
+      + D.tr.evid.map((e, i) => '<button class="sent" data-v="' + i + '"'
+          + (st.ev === i ? ' aria-pressed="true"' : '') + '>' + esc(e.t) + '</button>').join('')
+      + '<div id="fb4">' + (st.ev !== null ? fb4(D.tr.evid[st.ev]) : '') + '</div></div>';
+    paint(h, wire, keep);
   };
+  const toNext = k => setTimeout(() => {
+    const el = document.getElementById('g' + k);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 260);
   const wire = () => {
     noCta();
     main.querySelectorAll('#stem .chip').forEach(b => b.onclick = () => {
-      const i = +b.dataset.s; if (used.includes(i) || slotIdx >= SL.length) return;
-      const kind = stem[i].k, want = SL[slotIdx];
-      if (kind === want.k) {                       // 填对当前这一件
-        filled[slotIdx] = stem[i].t; used.push(i); slotIdx++;
-        const all = slotIdx >= SL.length;
-        if (all) { S.tr.o1 = true; phase = Math.max(phase, 1); }
-        render();
+      const i = +b.dataset.s; if (st.used.includes(i) || st.slotIdx >= SL.length) return;
+      const kind = stem[i].k, want = SL[st.slotIdx];
+      if (kind === want.k) {
+        st.filled[st.slotIdx] = stem[i].t; st.used.push(i); st.slotIdx++;
+        const all = st.slotIdx >= SL.length;
+        if (all) { S.tr.o1 = true; st.phase = Math.max(st.phase, 1); }
+        render(true);
         $('#fb1').innerHTML = all
           ? '<div class="fb ok">✓ 三件都找齐了：<b>说说</b>（干什么）· <b>第④⑤段</b>（去哪找）· <b>答两点</b>（写几点）。'
-            + K('以后每道大题，动笔前先这么问自己三遍。', '连续 3 次拆全才算过关。') + '</div>'
-          : '<div class="fb ok">✓ 对。接着找第 ' + (slotIdx+1) + ' 件：<b>' + esc(SL[slotIdx].q) + '</b></div>';
-      } else {                                     // 点错了：说清为什么不是它
+            + K('以后每道大题，动笔前先这么问自己三遍。', '连续 3 次拆全才算过关。')
+            + '<br><b>这一关过了，下面是第 ② 关。</b></div>' + goGate(1)
+          : '<div class="fb ok">✓ 对。接着找第 ' + (st.slotIdx+1) + ' 件：<b>' + esc(SL[st.slotIdx].q) + '</b></div>';
+        if (all) toNext(1);
+      } else {
         const other = SL.findIndex(x => x.k === kind);
         $('#fb1').innerHTML = '<div class="fb bad">' + (other >= 0
           ? '「' + esc(stem[i].t) + '」是<b>' + esc(SL[other].q) + '</b>那一件，等会儿才轮到它。现在先找<b>' + esc(want.q) + '</b>。'
@@ -848,114 +924,117 @@ function tAsk(){
       }
     });
     main.querySelectorAll('[data-n]').forEach(b => b.onclick = () => {
-      cnt = +b.dataset.n;
-      main.querySelectorAll('[data-n]').forEach(x => x.classList.remove('right','wrong'));
-      b.classList.add(cnt === 2 ? 'right' : 'wrong');
-      S.tr.o2 = cnt === 2;
-      $('#fb2').innerHTML = cnt === 2
-        ? '<div class="fb ok">✓ 4 分 → 2 点。' + K('老师是按「点」给分的，不是按你写得多长给。', '踩点给分：要点数由分值决定，不由你写了多长决定。') + '</div>'
-        : '<div class="fb bad">' + K('4 分一般拆成 <b>2 点</b>写。只写 1 点，等于先丢一半分。',
-            '4 分题按 2 分一点拆，应是 <b>2 点</b>。只写 1 点，先丢一半。') + '</div>';
-      phase = Math.max(phase, 2); setTimeout(render, 700);
+      st.cnt = +b.dataset.n; S.tr.o2 = st.cnt === 2; st.phase = Math.max(st.phase, 2);
+      render(true);
+      $('#fb2').innerHTML = fb2(st.cnt) + '<div style="font-size:12.5px;color:var(--ink-muted);margin-top:6px">这一关过了，下面是第 ③ 关。</div>' + goGate(2);
+      toNext(2);
     });
     main.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
-      const i = +b.dataset.p, at = pts.indexOf(i);
-      if (at >= 0) pts.splice(at, 1); else if (pts.length < 2) pts.push(i);
-      main.querySelectorAll('[data-p]').forEach(x => x.setAttribute('aria-pressed', pts.includes(+x.dataset.p)));
-      if (pts.length === 2) {
-        const ok = D.tr.pts.ans.every(a => pts.includes(a)); S.tr.pts = ok;
-        $('#fb3').innerHTML = ok ? '<div class="fb ok">✓ 两点正好是同一个机制的两面——这就是第三个原因被放在最后的理由。</div>'
-          : '<div class="fb bad">再想想：作者把第三个原因放最后，是因为它<b>同时</b>解释了「为什么牢」和「为什么不准」。</div>';
-        phase = Math.max(phase, 3); setTimeout(render, 900);
+      const i = +b.dataset.p, at = st.pts.indexOf(i);
+      if (at >= 0) st.pts.splice(at, 1); else if (st.pts.length < 2) st.pts.push(i);
+      main.querySelectorAll('[data-p]').forEach(x => x.setAttribute('aria-pressed', st.pts.includes(+x.dataset.p)));
+      if (st.pts.length === 2) {
+        const ok = D.tr.pts.ans.every(a => st.pts.includes(a)); S.tr.pts = ok;
+        st.phase = Math.max(st.phase, 3);
+        render(true);
+        $('#fb3').innerHTML = fb3(ok) + '<div style="font-size:12.5px;color:var(--ink-muted);margin-top:6px">这一关过了，下面是最后一关。</div>' + goGate(3);
+        toNext(3);
       }
     });
     main.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
-      ev = +b.dataset.v; const e = D.tr.evid[ev]; S.tr.o4 = e.ok;
-      main.querySelectorAll('[data-v]').forEach(x => x.classList.remove('right','wrong'));
-      b.classList.add(e.ok ? 'right' : 'wrong');
-      $('#fb4').innerHTML = '<div class="fb ' + (e.ok ? 'ok' : 'bad') + '">' + (e.ok ? '✓ ' : '✗ ') + esc(e.why) + '</div>';
-      cta('下一步：把文章切开', () => go('train', 3));
+      st.ev = +b.dataset.v; const e = D.tr.evid[st.ev]; S.tr.o4 = e.ok;
+      main.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', +x.dataset.v === st.ev));
+      $('#fb4').innerHTML = fb4(e);
+      cta('四关做完了，下一步：把文章切开', () => go('train', 3));
     });
-    if (phase >= 3 && ev !== null) cta('下一步：把文章切开', () => go('train', 3));
+    if (st.ev !== null) cta('四关做完了，下一步：把文章切开', () => go('train', 3));
   };
-  render();
+  render(false);
 }
 function tSort(){
-  let cuts = [];
-  const render = () => {
+  const so = S.tr.sort = S.tr.sort || {cuts:[], titles:['','',''], main:''};
+  const fb5 = ok => '<div class="fb ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✓ ' : '△ ')
+    + '标准切法是 <b>第①②段｜第③④⑤段｜第⑥段起</b>：提出问题 ｜ 三个原因 ｜ 牢与准的两面。'
+    + (ok ? '你的切法在容差内。' : '你的两刀差得有点远——再看一眼哪里出现了「但是」「所以」这类转折词。') + '</div>';
+  const render = (keep) => {
     let h = stepHead('第 4 步 · 约 2 分钟', '切成三块，再压成一句话', 'P4 结构切块 · P5 主旨压缩',
         K('概括题写不准，多半是没先把文章切开。', '概括题抓不准，十有八九是结构没切开。先切块，再压一句话。'));
-    h += '<div class="card"><div class="eyebrow">切块</div><p class="sub">在段落之间切<b>两刀</b>，把全文分成三块。</p><div class="txt" style="font-size:15px">';
+    h += '<div class="card" id="c0"><div class="eyebrow">这一步有两件事 · 第 1 件'
+      + '<span class="pill ' + (S.tr.p4 !== undefined ? 'ok' : 'on') + '">' + (S.tr.p4 !== undefined ? '✓ 完成' : '现在这件') + '</span></div>'
+      + '<h3 class="sub3" style="margin-top:0">把文章切成三块</h3>'
+      + '<p class="sub">在段落之间切<b>两刀</b>。已经切了 <b>' + so.cuts.length + '/2</b> 刀。</p><div class="txt" style="font-size:15px">';
     D.tr.paras.forEach((p, i) => {
-      if (i > 0) h += '<div class="cut ' + (cuts.includes(i) ? 'on' : '') + '"><button data-c="' + i + '">'
-        + (cuts.includes(i) ? '✂︎ 已切' : '＋ 在这里切一刀') + '</button></div>';
-      h += '<p style="font-size:15px;line-height:1.9">' + p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') + '</p>';
+      if (i > 0) h += '<div class="cut ' + (so.cuts.includes(i) ? 'on' : '') + '"><button data-c="' + i + '">'
+        + (so.cuts.includes(i) ? '✂︎ 已切（再点一下取消）' : '＋ 在这里切一刀') + '</button></div>';
+      h += '<p style="font-size:15px;line-height:1.9"><span class="pn">' + (CN[i] || (i+1)) + '</span>'
+        + p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') + '</p>';
     });
-    h += '</div><div id="fb5"></div></div>';
-    if (S.tr.p4 !== undefined) h += '<div class="card"><div class="eyebrow">小标题</div>'
+    h += '</div><div id="fb5">' + (S.tr.p4 !== undefined ? fb5(S.tr.p4) : '') + '</div></div>';
+    if (S.tr.p4 !== undefined) h += '<div class="card" id="c1"><div class="eyebrow">第 2 件'
+      + '<span class="pill ' + (S.tr.p5 ? 'ok' : 'on') + '">' + (S.tr.p5 ? '✓ 完成' : '现在这件') + '</span></div>'
+      + '<h3 class="sub3" style="margin-top:0">' + K('给每块起个名字，再压成一句话', '小标题 ＋ 主旨压缩') + '</h3>'
       + '<p class="sub">' + K('每块起个名字，六个字以内', '给每块起一个 ≤6 字、<b>带动作</b>的小标题') + '</p>'
-      + [0,1,2].map(i => '<input type="text" maxlength="6" data-t="' + i + '" placeholder="第 ' + (i+1) + ' 块，如「三个原因」" style="margin-bottom:8px">').join('')
+      + [0,1,2].map(i => '<input type="text" maxlength="6" data-t="' + i + '" value="' + esc(so.titles[i]) + '" placeholder="第 ' + (i+1) + ' 块，如「三个原因」" style="margin-bottom:8px">').join('')
       + '<h3 class="sub3">' + K('一句话说清这篇讲了什么', 'P5 一句话说清全文') + '</h3><p class="sub">'
       + K('30 字以内。别写「表达了作者的思想感情」——那句话放哪篇都通，等于没说。',
           '≤30 字，要有主体和主事件，不要「表达了作者的思想感情」这类套话') + '</p>'
-      + '<textarea id="main1" style="min-height:70px" placeholder="童年的事记得牢，是因为……"></textarea>'
-      + '<div class="cnt"><span id="mc">0</span>/30 字</div><div id="fb6"></div></div>';
-    paint(h, wire);
+      + '<textarea id="main1" style="min-height:70px" placeholder="童年的事记得牢，是因为……">' + esc(so.main) + '</textarea>'
+      + '<div class="cnt"><span id="mc">' + so.main.length + '</span>/30 字</div><div id="fb6"></div></div>';
+    paint(h, wire, keep);
   };
   const wire = () => {
     noCta();
     main.querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
-      const i = +b.dataset.c, at = cuts.indexOf(i);
-      if (at >= 0) cuts.splice(at, 1); else if (cuts.length < 2) cuts.push(i);
-      cuts.sort((a, b2) => a - b2);
-      if (cuts.length === 2) {
-        const [c1, c2] = cuts, [s1, s2] = D.tr.cuts, t = D.tr.tol;
-        const ok = Math.abs(c1 - s1) <= t && Math.abs(c2 - s2) <= t;
-        S.tr.p4 = ok;
-        setTimeout(() => { render();
-          $('#fb5').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✓ ' : '△ ')
-           + '标准切法是 <b>第①②段｜第③④⑤段｜第⑥段起</b>：提出问题 ｜ 三个原因 ｜ 牢与准的两面。'
-           + (ok ? '你的切法在容差内。' : '你的两刀差得有点远——再看一眼哪里出现了「但是」「所以」这类转折词。') + '</div>'; }, 60);
-      } else render();
+      const i = +b.dataset.c, at = so.cuts.indexOf(i);
+      if (at >= 0) so.cuts.splice(at, 1); else if (so.cuts.length < 2) so.cuts.push(i);
+      so.cuts.sort((a, b2) => a - b2);
+      if (so.cuts.length === 2) {
+        const [c1, c2] = so.cuts, [s1, s2] = D.tr.cuts, t = D.tr.tol;
+        S.tr.p4 = Math.abs(c1 - s1) <= t && Math.abs(c2 - s2) <= t;
+        render(true);
+        $('#fb5').innerHTML = fb5(S.tr.p4) + '<div style="font-size:12.5px;color:var(--ink-muted);margin-top:6px">切好了，下面还有第 2 件事。</div>'
+          + '<button class="cta ghost" style="margin-top:10px" onclick="document.getElementById(\'c1\').scrollIntoView({behavior:\'smooth\',block:\'start\'})">去起小标题 ›</button>';
+        setTimeout(() => { const el = document.getElementById('c1'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); }, 280);
+      } else render(true);
     });
     const inp = main.querySelectorAll('[data-t]');
     const ta = $('#main1');
     const check = () => {
-      const titles = [...inp].map(x => x.value.trim());
-      const t = ta ? ta.value.trim() : '';
-      if (ta) $('#mc').textContent = t.length;
-      const okT = titles.length === 3 && titles.every(x => x.length >= 2 && x.length <= 6);
-      const okM = t.length >= 8 && t.length <= 30 && D.tr.mainkw.some(k => t.includes(k));
+      so.titles = [...inp].map(x => x.value.trim());
+      so.main = ta ? ta.value.trim() : '';
+      if (ta) $('#mc').textContent = so.main.length;
+      const okT = so.titles.length === 3 && so.titles.every(x => x.length >= 2 && x.length <= 6);
+      const okM = so.main.length >= 8 && so.main.length <= 30 && D.tr.mainkw.some(k => so.main.includes(k));
       S.tr.titles = okT; S.tr.p5 = okM;
       if (okT && okM) {
         $('#fb6').innerHTML = '<div class="fb ok">✓ 三块都起了名字，一句话也压进 30 字了。'
           + K('这件事得连着三篇都做到才算真会——今天是第一篇。', '同一项技能在<b>三篇不同文本</b>上连续达标，才算过关。') + '</div>';
         cta('最后一步：写一句', () => go('train', 4));
-      } else { $('#fb6') && ($('#fb6').innerHTML = ''); noCta(); }
+      } else { if ($('#fb6')) $('#fb6').innerHTML = ''; noCta(); }
     };
-    inp.forEach(x => x.oninput = check); if (ta) ta.oninput = check;
+    inp.forEach(x => x.oninput = check); if (ta) { ta.oninput = check; if (so.main) check(); }
   };
-  render();
+  render(false);
 }
 function tWrite(){
   paint(stepHead('第 5 步 · 约 2 分钟', '写一句就收工', '一次最低门槛输出 · 写作回应文本 ES≈+0.40',
         K('这一步不能跳。但真的只要一句话，写完今天就结束了。',
           '证据最强的一环（写作回应文本 ES≈+0.40），所以它<b>不可跳过</b>——但门槛只有一句话。'))
    + '<div class="qh">读完这篇，你想起自己小时候的哪件事？你觉得它更像是「记得牢」的那一半，还是「记不准」的那一半？</div>'
-   + '<textarea id="w" placeholder="写一句就行，15 个字起步。"></textarea>'
-   + '<div class="cnt"><span id="wc">0</span> 字 · ' + K('满 15 字就能收工', '门槛 15 字') + '</div>'
+   + '<textarea id="w" placeholder="写一句就行，15 个字起步。">' + esc(S.tr.writeText || '') + '</textarea>'
+   + '<div class="cnt"><span id="wc">' + (S.tr.writeText || '').length + '</span> 字 · ' + K('满 15 字就能收工', '门槛 15 字') + '</div>'
    + K('<div class="fb">写完这句，今天这一篇就完了。不用写长，写你真想到的那件事就行。</div>',
        '<div class="fb">产品里这里原本有一个「跳过」按钮。07 的审查结论是：<b>把效应量最大的零件做成选项，等于没做。</b>'
        + '所以「跳过」被改成了「只写一句」——退出通道还在，但退出的终点仍然是一次输出。</div>'), () => {
     const ta = $('#w');
-    ta.oninput = () => { $('#wc').textContent = ta.value.trim().length;
-      const ok = ta.value.trim().length >= 15; S.tr.write = ok;
-      ok ? cta('今天读完了', () => go('tdone')) : noCta(); };
-    noCta();
+    const check = () => { const v = ta.value.trim(); S.tr.writeText = ta.value;
+      $('#wc').textContent = v.length; S.tr.write = v.length >= 15;
+      S.tr.write ? cta('今天读完了', () => go('tdone')) : noCta(); };
+    ta.oninput = check; noCta(); check();
   });
 }
 function scTDone(){
-  stopClock(); dots(5, 5); setTop('今天读完了', D.tr.title, null, true);
+  stopClock(); steps(TRSTEPS2, 5); setTop('今天读完了', D.tr.title, () => go('train', 4), true);
   if (MODE === 'kid') return scTDoneKid();
   const done = [
     ['P7','理解监控', S.tr.markWhy !== undefined],
@@ -1010,7 +1089,7 @@ function scTDoneKid(){
 /* ══ 8. 微技能面板 / 疗程 / 说明 ══ */
 function scSkills(){
   MODE = 'pro';
-  stopClock(); dots(0, 0); setTop('17 个微技能', '可训练＝可判定', null, true);
+  stopClock(); steps(null); setTop('17 个微技能', '可训练＝可判定', () => go('tdone'), true);
   const doneMap = {P7: S.tr.markWhy !== undefined, O1: !!S.tr.o1, O2: !!S.tr.o2, O4: !!S.tr.o4, P4: !!S.tr.p4, P5: !!S.tr.p5};
   const rx = S.prof ? S.prof.rx.map(r => r[0]).join(' ') : '';
   paint('<div class="card"><div class="eyebrow">规则</div><h2 class="sec">写不出过关标准的，不写进课表</h2>'
@@ -1029,7 +1108,7 @@ function scSkills(){
 }
 function scPlan(){
   MODE = 'pro';
-  stopClock(); dots(0, 0); setTop('12 周疗程', '每天 15 分钟', null, true);
+  stopClock(); steps(null); setTop('12 周疗程', '每天 15 分钟', () => go('skills'), true);
   const ph = [
     ['定位期','第 1–2 周','画像成形、建立输出习惯','全员：P7 ＋ O1 ＋ 每篇一句话输出','画像稳定；输出率 ≥70%'],
     ['主攻期','第 3–8 周','攻画像的主病因','按处方，同时在训 ≤3 项','每 4 周至少 2 个微技能过关'],
