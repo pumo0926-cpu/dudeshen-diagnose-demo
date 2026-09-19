@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>读得深 · 三道闸门：初一分诊与训练 Demo</title>
+<meta name="description" content="初中生阅读问题诊断与可训练提升方案的可试玩版：20 分钟分诊分出三道闸门与六种画像，再领一份 15 分钟训练块。">
+<meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<style>
+:root{color-scheme:light dark;
+ --plane:#f9f9f7;--surface:#fcfcfb;--surface-2:#f3f2ef;
+ --ink:#0b0b0b;--ink-2:#52514e;--ink-muted:#898781;
+ --grid:#e1e0d9;--axis:#c3c2b7;--border:rgba(11,11,11,.10);
+ --accent:#2a78d6;--accent-soft:#86b6ef;--track:#cde2fb;--wash:#eaf2fd;
+ --ok:#0a7a3d;--ok-wash:#e6f4ec;--warn:#9a5b00;--warn-wash:#fbf0dd;--bad:#b3261e;--bad-wash:#fbe9e7;--r:14px}
+@media (prefers-color-scheme:dark){:root{
+ --plane:#0d0d0d;--surface:#1a1a19;--surface-2:#232321;
+ --ink:#fff;--ink-2:#c3c2b7;--ink-muted:#898781;
+ --grid:#2c2c2a;--axis:#383835;--border:rgba(255,255,255,.10);
+ --accent:#3987e5;--accent-soft:#6da7ec;--track:#2c2c2a;--wash:#141c26;
+ --ok:#38c172;--ok-wash:#12231a;--warn:#e0a44a;--warn-wash:#241d10;--bad:#f2685e;--bad-wash:#251413}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--plane);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.app{max-width:480px;margin:0 auto;padding:0 16px 110px;min-height:100vh}
+h1,h2,h3{margin:0;line-height:1.35}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.hide{display:none!important}
+.top{position:sticky;top:0;z-index:20;background:var(--plane);padding:13px 16px 10px;margin:0 -16px;border-bottom:1px solid var(--border)}
+.top .row{display:flex;align-items:center;gap:10px}
+.brand{font-size:16.5px;font-weight:680;letter-spacing:-.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brand s{text-decoration:none;color:var(--ink-muted);font-weight:400;font-size:12px;margin-left:6px}
+.back{font-size:13.5px;color:var(--accent);flex:0 0 auto}
+.clock{font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink-2);background:var(--surface-2);border-radius:999px;padding:3px 10px;flex:0 0 auto}
+.clock.hot{background:var(--bad-wash);color:var(--bad);font-weight:620}
+.steps{display:flex;gap:4px;margin:9px 0 0}
+.steps div{flex:1;height:3px;border-radius:2px;background:var(--grid)}
+.steps div.on{background:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin:12px 0}
+.card.tight{padding:13px 15px}
+.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--ink-muted);margin:0 0 7px;text-transform:uppercase}
+h2.sec{font-size:19px;font-weight:660;margin:0 0 4px;letter-spacing:-.01em}
+h3.sub3{font-size:15.5px;font-weight:640;margin:18px 0 6px}
+.sub{font-size:12.5px;color:var(--ink-muted);margin:0 0 12px}
+p{margin:0 0 10px;font-size:15px;color:var(--ink-2)}
+.hero{padding:26px 0 4px}
+.hero h1{font-size:30px;font-weight:720;letter-spacing:-.02em}
+.hero .lead{font-size:15px;color:var(--ink-2);margin:10px 0 0;line-height:1.75}
+.tag{display:inline-block;font-size:11px;letter-spacing:.12em;color:var(--accent);background:var(--wash);border-radius:999px;padding:4px 11px;margin:0 0 12px}
+.gates{display:flex;gap:8px;margin:14px 0 4px}
+.gate{flex:1;background:var(--surface-2);border-radius:11px;padding:11px 9px;text-align:center}
+.gate b{display:block;font-size:13.5px;font-weight:650;color:var(--ink)}
+.gate span{font-size:11px;color:var(--ink-muted);line-height:1.5;display:block;margin-top:2px}
+.gate i{font-style:normal;font-size:20px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.txt p{font-size:16.5px;color:var(--ink);margin:0 0 14px;line-height:2.05;text-indent:2em}
+.txt p.q{position:relative}
+.txt p.mark{background:var(--warn-wash);border-radius:6px;box-shadow:0 0 0 4px var(--warn-wash)}
+.txt p.pick{cursor:pointer}
+.txt p.pick:active{opacity:.6}
+.notes{font-size:12.5px;color:var(--ink-2);background:var(--surface-2);border-left:2px solid var(--accent-soft);padding:8px 11px;border-radius:0 8px 8px 0;margin:0 0 14px}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:11px;padding:12px 13px;margin:0 0 8px;font-size:14.5px;color:var(--ink-2)}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--wash);color:var(--ink)}
+.opt.right{border-color:var(--ok);background:var(--ok-wash);color:var(--ink)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-wash);color:var(--ink)}
+.opt small{display:block;font-size:11.5px;color:var(--ink-muted);margin-top:3px}
+.qh{font-size:15.5px;color:var(--ink);font-weight:620;margin:14px 0 10px;line-height:1.6}
+.qh small{display:block;font-weight:400;font-size:11px;color:var(--ink-muted);letter-spacing:.1em;margin-bottom:5px}
+.conf{display:flex;gap:8px;margin:14px 0 0}
+.conf button{flex:1;border:1px solid var(--border);background:var(--surface);border-radius:11px;padding:11px 0;font-size:14px;color:var(--ink-2);text-align:center}
+.conf button:active{background:var(--wash)}
+.cta{display:block;width:100%;background:var(--accent);color:#fff;font-size:15.5px;font-weight:620;padding:13px;border-radius:12px;margin:16px 0 0;text-align:center}
+.cta[disabled]{opacity:.35}
+.cta.ghost{background:var(--surface);color:var(--accent);border:1px solid var(--accent-soft)}
+.link{display:block;width:100%;text-align:center;font-size:13.5px;color:var(--accent);padding:11px 0 0}
+.fb{font-size:13px;border-radius:10px;padding:10px 12px;margin:10px 0 0;background:var(--surface-2);color:var(--ink-2)}
+.fb.ok{background:var(--ok-wash);color:var(--ok)}
+.fb.bad{background:var(--bad-wash);color:var(--bad)}
+.fb b{color:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px;line-height:2.2}
+.chip{border:1px dashed var(--axis);border-radius:8px;padding:4px 8px;font-size:14.5px;color:var(--ink-2);background:var(--surface)}
+.chip[aria-pressed="true"]{border-style:solid;border-color:var(--accent);background:var(--wash);color:var(--ink);font-weight:600}
+.chip.hit{border-color:var(--ok);background:var(--ok-wash);color:var(--ok)}
+.chip.miss{border-color:var(--bad);background:var(--bad-wash);color:var(--bad)}
+.chip.plain{border:0;padding:4px 2px;background:none}
+.sent{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:11px;padding:11px 12px;margin:0 0 7px;font-size:14px;color:var(--ink-2);line-height:1.75}
+.sent[aria-pressed="true"]{border-color:var(--accent);background:var(--wash);color:var(--ink)}
+.sent.right{border-color:var(--ok);background:var(--ok-wash)}
+.sent.wrong{border-color:var(--bad);background:var(--bad-wash)}
+textarea,input[type=text]{width:100%;border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:11px;font:inherit;font-size:15px;color:var(--ink);resize:vertical}
+textarea{min-height:92px}
+textarea:focus,input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.cnt{font-size:11.5px;color:var(--ink-muted);text-align:right;margin:4px 0 0;font-variant-numeric:tabular-nums}
+.meter{margin:0 0 11px}
+.meter .lab{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-2);margin-bottom:5px}
+.meter .lab b{color:var(--ink);font-variant-numeric:tabular-nums}
+.meter .track{height:9px;border-radius:5px;background:var(--track);overflow:hidden}
+.meter .fill{display:block;height:100%;background:var(--accent);border-radius:5px;transition:width .5s}
+.meter.g .fill{background:var(--ok)}
+.meter.w .fill{background:var(--warn)}
+.rules{width:100%;border-collapse:collapse;font-size:13px}
+.rules td{padding:9px 4px;border-bottom:1px solid var(--grid);color:var(--ink-2);vertical-align:top}
+.rules tr:last-child td{border-bottom:0}
+.rules .nm{color:var(--ink);font-weight:600;white-space:nowrap}
+.rules .vl{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rules tr.hit .nm{color:var(--accent)}
+.rules tr.hit{background:var(--wash)}
+.pill{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);margin-left:6px}
+.pill.on{background:var(--accent);color:#fff;font-weight:600}
+.pill.ok{background:var(--ok-wash);color:var(--ok);font-weight:600}
+.cut{display:flex;align-items:center;gap:8px;margin:2px 0 12px}
+.cut button{flex:1;border:1px dashed var(--axis);border-radius:8px;padding:5px 0;font-size:11.5px;color:var(--ink-muted)}
+.cut.on button{border-style:solid;border-color:var(--accent);color:var(--accent);background:var(--wash);font-weight:600}
+.blk{border-left:3px solid var(--accent-soft);padding-left:11px;margin:0 0 12px}
+.blk b{font-size:12px;color:var(--accent);display:block;margin-bottom:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv{background:var(--surface-2);border-radius:10px;padding:10px 11px}
+.kv b{display:block;font-size:18px;font-weight:660;color:var(--ink);font-variant-numeric:tabular-nums}
+.kv span{font-size:11px;color:var(--ink-muted)}
+.sk{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--grid);font-size:13.5px}
+.sk:last-child{border-bottom:0}
+.sk .id{flex:0 0 34px;font-size:11.5px;font-weight:660;color:var(--accent);background:var(--wash);border-radius:7px;text-align:center;padding:3px 0}
+.sk .b{flex:1;min-width:0}
+.sk .b b{color:var(--ink);font-size:14px;font-weight:600}
+.sk .b span{display:block;font-size:11.5px;color:var(--ink-muted);line-height:1.6}
+.sk .st{flex:0 0 auto;font-size:10.5px;padding:2px 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-muted)}
+.sk .st.on{background:var(--ok-wash);color:var(--ok);font-weight:620}
+.sk .st.tr{background:var(--wash);color:var(--accent);font-weight:620}
+.tl{border-left:2px solid var(--grid);margin:6px 0 0 6px;padding:0 0 0 15px}
+.tl .ph{position:relative;padding:0 0 16px}
+.tl .ph:before{content:"";position:absolute;left:-21px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.tl .ph b{font-size:14.5px;color:var(--ink);font-weight:620}
+.tl .ph i{font-style:normal;font-size:11.5px;color:var(--ink-muted);margin-left:6px}
+.tl .ph p{margin:3px 0 0;font-size:13px}
+.peer .r{display:flex;align-items:center;gap:9px;margin:0 0 6px;font-size:13px}
+.peer .bar{flex:1;height:16px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.peer .bar i{display:block;height:100%;background:var(--accent-soft);border-radius:0 4px 4px 0}
+.peer .r.me .bar i{background:var(--accent)}
+.peer .v{flex:0 0 32px;text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.vs{display:grid;grid-template-columns:1fr;gap:8px}
+.vs .b{border-radius:11px;padding:11px 12px;font-size:13.5px;line-height:1.7}
+.vs .b.no{background:var(--bad-wash);color:var(--ink-2)}
+.vs .b.yes{background:var(--ok-wash);color:var(--ink-2)}
+.vs .b em{font-style:normal;display:block;font-size:11px;letter-spacing:.1em;margin-bottom:4px;color:var(--ink-muted)}
+.big{text-align:center;padding:22px 0 2px}
+.big .n{font-size:42px;font-weight:720;color:var(--accent);line-height:1.1}
+.big .t{font-size:14px;color:var(--ink-muted);margin-top:4px}
+.note{font-size:11.5px;color:var(--ink-muted);margin:10px 0 0;line-height:1.8}
+.foot{font-size:11.5px;color:var(--ink-muted);text-align:center;line-height:1.95;padding:24px 0 0}
+.foot a{color:var(--ink-2)}
+.bar-fixed{position:fixed;left:0;right:0;bottom:0;background:var(--plane);border-top:1px solid var(--border);padding:10px 16px calc(10px + env(safe-area-inset-bottom));z-index:30}
+.bar-fixed .in{max-width:480px;margin:0 auto}
+.bar-fixed .cta{margin:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="row">
+      <button class="back hide" id="back">‹ 返回</button>
+      <div class="brand" id="brand">三道闸门</div>
+      <div class="clock hide" id="clock">0:00</div>
+    </div>
+    <div class="steps hide" id="steps"></div>
+  </div>
+  <div id="main"></div>
+</div>
+<div class="bar-fixed hide" id="bar"><div class="in"><button class="cta" id="barbtn">继续</button></div></div>
+<script>
+const D = {"dx": {"title": "我的第一次值日", "words": 952, "paras": ["开学第三周，轮到我值日。", "值日表贴在教室后面，一张打印纸，用透明胶粘了四个角。我的名字排在周四那一栏，后面跟着另一个名字：陈可。我跟她没说过话。她坐在第一排，个子小，上课总把背挺得很直。", "放学铃响，教室一下子空了。我拖过扫把，心里想这有什么难的。", "难的地方很快就出来了。", "第一，桌椅不是摆好的。要先把每一排的桌子对齐，椅子塞进去，才能扫。我推第一排的时候，第二排又歪了；等我去弄第二排，第一排又被我自己的书包蹭斜了。", "第二，垃圾不在地上，在桌兜里。我扫完一遍，回头一看，桌兜里探出来的纸团、试卷角、半截笔，比地上的还多。", "第三，扫出来的东西没地方放。垃圾桶满了。我把扫拢的一堆推到门边，想着等会儿一起倒——结果后来进来拿书的同学一脚踩上去，又散开了。", "我扫到第四排的时候，陈可来了。她没说话，从墙角拿了拖把，开始从最里面往外拖。", "我说：「不是应该先扫完再拖吗？」", "她说：「你扫你的。」", "我有点不高兴。凭什么她说了算。", "但我很快发现她不是在跟我抢。她拖的是我已经扫过的那几排，一排一排往外退，退到哪儿，哪儿的地就变成干净的深色。她走得很慢，拖把每推一下都要回一下手腕，把边角那条线收进来。", "我又发现一件事：她拖过的地方，桌子腿是齐的。我明明没对齐。", "我停下来问：「你什么时候摆的？」", "她说：「拖之前。」", "我说：「我没看见。」", "她说：「你在扫第三排。」", "我们一句一句地说着，手都没停。等我扫到最后一排，她已经拖完了一多半。我去倒垃圾，回来的时候她正踮着脚擦黑板的最上面一行——那一行我根本够不着，她比我还矮，但她站在讲台的台阶上。", "全部弄完，天已经暗了。她把拖把在水池里涮干净，拧到一滴水都不掉，挂回墙角，挂的时候把把手朝外，说了一句：「下次好拿。」", "然后她背上书包走了，从头到尾没跟我说过一句多余的话。", "第二天早上，我比平时早到了十分钟。我想看看昨天扫完的教室，第二天早上是什么样。", "结果什么也看不出来。地是干净的，桌子是齐的，黑板是空的。如果我昨天没值日，今天早上进来看到的也是这个样子——因为前一天也有人做了同样的事。", "我在座位上坐下来，忽然明白了一件我从没想过的事：**我在这间教室里坐了三个星期，每天早上走进来都觉得「教室本来就是干净的」。** 而每一个「本来」的背后，都有一个人在天黑以后，把把手朝外挂回了墙角。", "从那以后，我每次值日都会看一眼值日表上另一个名字。"], "notes": "桌兜：课桌下面放书的空格。｜涮：在水里来回晃动洗净。", "probe": [{"layer": "L1", "tag": "事实检索", "q": "「我」扫地时遇到的困难，下面哪一项<b>不是</b>文中提到的？", "opts": ["桌椅不是摆好的，要先对齐", "垃圾不在地上，在桌兜里", "垃圾桶满了，扫拢的一堆没处放", "扫把太短，弯腰太累"], "ans": 3}, {"layer": "L1", "tag": "事实检索", "q": "陈可把拖把挂回墙角时，说了哪四个字？", "opts": ["「你扫你的」", "「下次好拿」", "「拖之前」", "「我没看见」"], "ans": 1}, {"layer": "L1", "tag": "事实检索", "q": "陈可拖地的方向是——", "opts": ["从门口往最里面拖", "等「我」全部扫完再从头拖", "从最里面往外退着拖", "和「我」一起从中间往两边拖"], "ans": 2}, {"layer": "L2", "tag": "动机推断", "q": "「我」问「你什么时候摆的？」陈可答「拖之前」。这段对话让你看出陈可做事的什么特点？", "opts": ["她想抢在「我」前面表现", "她心里有顺序，而且做在别人看见之前", "她怕老师检查不合格", "她想早点做完回家"], "ans": 1}, {"layer": "L2", "tag": "段落作用", "q": "第二天早上「结果什么也看不出来」这一段，在全文里起什么作用？", "opts": ["交代时间，让故事有头有尾", "说明这间教室平时就很干净", "用「看不出来」反过来显出这件事的性质：做得好的值日是不留痕迹的", "为了写「我」比平时早到十分钟"], "ans": 2}, {"layer": "L2", "tag": "结构顺序", "q": "全文是按什么顺序写的？", "opts": ["倒叙：先写第二天早上，再回头写值日那天", "按时间顺序：值日表 → 扫地遇到困难 → 陈可来了 → 第二天早上", "插叙：中间插入陈可平时的表现", "按空间顺序：从教室后面写到讲台"], "ans": 1}, {"layer": "L3", "tag": "证据挂钩", "q": "作者靠什么把「话极少」的陈可写清楚？<br>先选观点，再从原文里<b>点一句</b>作证据。", "view": "evid", "opts": ["靠动作和做事的顺序", "靠外貌描写", "靠别人对她的评价"], "ans": 0}, {"layer": "L3", "tag": "要点数", "q": "「每一个『本来』的背后，都有一个人。」这句话在说什么？<br><b>本题 4 分，请选两点。</b>", "view": "multi", "opts": ["我们习以为常的「干净」，其实都是有人做出来的", "这些人做完就走，不被看见，所以才成了「本来」", "教室每天都需要有人打扫", "陈可比「我」更会做值日"], "ans": [0, 1]}], "evid": [{"t": "她坐在第一排，个子小，上课总把背挺得很直。", "ok": false, "why": "这是外貌与坐姿，不是「动作和顺序」。"}, {"t": "她拖的是我已经扫过的那几排，一排一排往外退，退到哪儿，哪儿的地就变成干净的深色。", "ok": true, "why": "退着拖、跟着进度走——动作里藏着顺序。"}, {"t": "她把拖把在水池里涮干净，拧到一滴水都不掉，挂回墙角，挂的时候把把手朝外。", "ok": true, "why": "一连串动作，收尾还替下一个人想好了。"}, {"t": "她说：「你扫你的。」", "ok": false, "why": "这是语言，而且正说明她话少——证明不了「靠动作写人」。"}, {"t": "我去倒垃圾，回来的时候她正踮着脚擦黑板的最上面一行。", "ok": true, "why": "够不着也要擦——动作替她说话。"}, {"t": "我跟她没说过话。", "ok": false, "why": "这是「我」的情况，与陈可怎么做事无关。"}], "retell": [{"name": "谁", "kws": ["我", "陈可", "她"], "tip": "主体"}, {"name": "做了什么", "kws": ["值日", "扫", "拖", "桌椅", "对齐", "垃圾", "黑板", "擦"], "tip": "主要事件"}, {"name": "先后", "kws": ["先", "然后", "后来", "接着", "再", "第二天", "最后", "开始"], "tip": "顺序词"}, {"name": "为什么值得写", "kws": ["干净", "本来", "没人", "看不出", "痕迹", "有人", "习惯"], "tip": "主旨"}], "vocab": [["她把拖把在水池里<b>涮</b>干净", ["在水里来回晃动洗净", "用力拧干", "用刷子使劲刷"], 0], ["桌兜里<b>探</b>出来的纸团", ["伸出来", "探望", "试探"], 0], ["一件在大人看来<b>微</b>不足道的事", ["细小", "稍微", "隐秘"], 0], ["《咏雪》：俄而雪<b>骤</b>", ["急、猛", "停止", "变小"], 0], ["《陈太丘与友期行》：太丘<b>舍</b>去", ["丢下、不再等", "房屋", "施舍"], 0], ["《陈太丘与友期行》：尊君在<b>不</b>", ["同「否」，表疑问", "不是", "不要"], 0], ["《陈太丘与友期行》：相<b>委</b>而去", ["丢下、舍弃", "委托", "觉得委屈"], 0], ["《陈太丘与友期行》：下车<b>引</b>之", ["拉", "引用", "带路"], 0], ["《陈太丘与友期行》：入门不<b>顾</b>", ["回头看", "照顾", "顾虑"], 0], ["她<b>踮</b>着脚擦黑板", ["抬起脚跟用脚尖站", "用力跺脚", "蹲下去"], 0]]}, "tr": {"title": "为什么童年的事，记得格外牢", "words": 762, "paras": ["你可能有过这样的体验：上周的数学课讲了什么，想半天想不起来；但七八岁那年夏天摔的一跤、掉的一颗牙、第一次一个人去买酱油走错的那条巷子，却清清楚楚，连当时的天气都记得。", "为什么越久远的事反而越清楚？", "**第一个原因是「第一次」。** 大脑对新鲜的事格外上心。同样是上学，第一天上学和第三百天上学，在记忆里占的分量完全不一样。童年之所以密集地留下记忆，是因为那几年里几乎每件事都是第一次——第一次坐火车、第一次住校、第一次被老师点名。等到长大，日子开始重复，重复的东西彼此覆盖，一年过去，能单独拎出来的事就那么几件。", "**第二个原因是情绪。** 记忆不是平均存放的。带着强烈情绪的事——特别开心、特别害怕、特别丢脸——会被存得更结实。这很好理解：对一个生物来说，记住「哪里有危险」比记住「昨天中午吃了什么」重要得多。童年的情绪往往来得又快又猛，一件在大人看来微不足道的事，孩子可能哭上一个下午。哭了一个下午的事，自然记得牢。", "**第三个原因常被忽略：反复讲述。** 童年的事往往被家人反复说起——过年时被提一遍，来客人时被提一遍，你自己也会跟同学讲。每讲一次，这段记忆就被取出来一次，再放回去一次。**被取用得越多的记忆，越不容易丢失。**", "但这里有个代价：**每取出来一次，记忆都有可能被改一点。** 你记得的可能不是当年发生的事，而是你上一次讲述的那个版本。有人会把听来的细节当成亲历，会把照片上看到的场景当成自己记得的场景。这并不是记性不好，而是记忆本来的工作方式——它更像一次次重新讲述，而不是一次次调出录像。", "所以，「童年的事记得格外牢」这句话其实要分成两半来说：", "**牢的那一半是真的**——因为第一次多、情绪强、被反复取用。", "**准的那一半要打个问号**——正因为被反复取用，它们也被反复修改过。", "下次你再跟别人讲起小时候某件事，不妨留意一下：这个细节，是你自己记得的，还是你从别人嘴里听来，又讲了很多遍，最后变成了自己的？"], "guess": {"q": "童年的事记得特别牢，你觉得最主要的原因是？", "options": ["那时候事少", "那时候几乎每件事都是第一次", "大人后来常提起", "当时情绪特别强烈"], "peer": [13, 37, 19, 31], "note": "同龄人分布为模拟数据"}, "cuts": [2, 5], "tol": 1, "stemText": "结合第④⑤段，说说这样安排有什么好处。（4 分，答两点）", "stem": [{"t": "结合", "k": ""}, {"t": "第④⑤段", "k": "range"}, {"t": "说说", "k": "verb"}, {"t": "这样安排", "k": ""}, {"t": "有什么好处", "k": ""}, {"t": "4 分", "k": ""}, {"t": "答两点", "k": "count"}], "pts": {"q": "这样安排的好处，选两点（4 分）", "opts": ["同一个机制的两面：先说它让记忆更牢，再说它也让记忆被改动", "先立后破，把话说完整，避免「童年记忆一定准」的绝对化", "说明作者也不确定，留给读者判断", "为了凑够三个原因，让结构更整齐"], "ans": [0, 1]}, "evid": [{"t": "被取用得越多的记忆，越不容易丢失。", "ok": true, "why": "这是「牢」的那一半的直接依据。"}, {"t": "每取出来一次，记忆都有可能被改一点。", "ok": true, "why": "这是「准」要打问号的直接依据。"}, {"t": "童年的情绪往往来得又快又猛。", "ok": false, "why": "这说的是第二个原因，与第三个原因的两面无关。"}, {"t": "你可能有过这样的体验。", "ok": false, "why": "这是开头的引入句，不是论据。"}], "mainkw": ["记忆", "童年", "牢", "准", "讲", "取"]}, "profiles": [{"k": "slow", "name": "慢读型", "gate": "输入闸", "why": "读得懂，但读不完", "rx": [["配速与流畅 I1", 40], ["结构切块 P4·P5", 30], ["输出 O1·O2·O4", 30]], "act": "今天这篇，定个闹钟：两分钟读完前半段，不回头。", "kid": "今天这篇，前半段给自己定两分钟，读完再回头。"}, {"k": "skim", "name": "跳读型", "gate": "加工闸", "why": "快，但只抓表层，靠猜", "rx": [["推断 P2·P3", 50], ["理解监控 P7", 20], ["输出 O1·O4", 30]], "act": "读人物的时候，多问一句：他为什么这么做？从哪句看出来？", "kid": "今天这篇，碰到人物就多问一句：他为什么这么做？"}, {"k": "scatter", "name": "散点型", "gate": "加工闸", "why": "细节都懂，抓不住整体", "rx": [["结构切块＋概括 P4·P5", 50], ["推断 P2·P3", 20], ["输出 O2·O5", 30]], "act": "今天这篇，试着把它切成三块，每块起个六个字以内的小标题。", "kid": "今天这篇，试着切成三块，每块起个六个字以内的小标题。"}, {"k": "copy", "name": "搬运型", "gate": "输出闸", "why": "读懂了，但答案全是原文", "rx": [["要点化＋证据句 O4·O5", 50], ["审题 O1·O2", 30], ["推断 P3", 20]], "act": "每写一点，后面挂一句原文；挂不住的那点，八成不是答案。", "kid": "今天这篇，每写一点，后面挂一句原文。"}, {"k": "miscal", "name": "失校准型", "gate": "加工闸", "why": "自我感觉良好，一对答案全错", "rx": [["理解监控 P7", 40], ["推断 P2·P3", 30], ["输出 O4", 30]], "act": "每篇必须标出一处「我这里没懂」——标不出来才是问题。", "kid": "今天这篇，标出一处你没看懂的地方。"}, {"k": "base", "name": "基础薄弱型", "gate": "输入闸", "why": "词卡住了，全线受影响", "rx": [["词汇·语素 I2·I3", 40], ["短文流畅 I1", 30], ["最低门槛输出", 30]], "act": "遇到不认识的词先别停，用上下文换个词读下去，读完再回头查。", "kid": "今天这篇，遇到不认识的词先别停，用上下文猜一个，读完再回头查。"}, {"k": "even", "name": "暂未偏科", "gate": "三闸门均衡", "why": "单次分诊没有测出明显短板", "rx": [["全员必练六项", 60], ["推断 P2·P3", 20], ["知识建构（主题簇连读）", 20]], "act": "保持每篇一次输出；真实版会用两周滚动数据再判一次。", "kid": "今天这篇，读完写一句话，就算完成。"}], "skills": [["I", "输入闸", [["I1", "默读配速", "2 分钟读完 800 字，3 道事实题对 2"], ["I2", "难词绕行", "5 处生词中 3 处能用上下文替换"], ["I3", "实词迁移", "课内实词放进新语境，连续两次 ≥80%"]]], ["P", "加工闸", [["P1", "指代还原", "3 处「这／其」还原全对"], ["P2", "关系推断", "3 组相邻句关系对 2，并指得出信号词"], ["P3", "动机推断", "说出动机，且挂得住一句原文"], ["P4", "结构切块", "切块与标准差 ≤1 块，小标题含动作"], ["P5", "主旨压缩", "≤30 字，含主体与主事件，不含套话"], ["P6", "信号词扫描", "圈全 ≥80%，并说得出各领起什么"], ["P7", "理解监控", "每篇标出一处没懂，并归类正确"], ["P8", "图文互证", "找出 1 处图文对应关系"]]], ["O", "输出闸", [["O1", "题干拆解", "指令动词／范围／数量三样圈全，连续 3 次"], ["O2", "分值→要点数", "要点数与分值匹配 ≥80%"], ["O3", "定位区间", "答前先标段落，命中 ≥70%"], ["O4", "证据句挂钩", "每点挂得住原文，空挂不算"], ["O5", "要点表述", "主体＋动作＋结果，≤25 字，不照抄"], ["O6", "单篇配速", "≤12 分钟做完，开放题不空"]]]], "star": ["O1", "O2", "O4", "P3", "P4", "P5", "P7"], "core": ["P4", "P5", "P7", "O1", "O2", "O4"]};
+const $ = s => document.querySelector(s);
+const main = $('#main'), bar = $('#bar'), barbtn = $('#barbtn'), clk = $('#clock'), stp = $('#steps');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const S = {read:{sec:0,over:false}, ans:[], retell:{txt:'',hit:[]}, bj:{redone:0,fixed:0},
+           vocab:{right:0}, prof:null, tr:{}, hist:[]};
+
+/* ── 顶栏 / 计时 ── */
+let tick = null;
+function stopClock(){ if(tick){clearInterval(tick);tick=null;} clk.classList.add('hide'); clk.classList.remove('hot'); }
+function runClock(dir, from, limit, onEnd){
+  stopClock(); let t = from; clk.classList.remove('hide');
+  const show = () => { const m = Math.floor(Math.abs(t)/60), s = Math.abs(t)%60;
+    clk.textContent = m + ':' + String(s).padStart(2,'0');
+    if (dir < 0 && t <= 10) clk.classList.add('hot'); };
+  show();
+  tick = setInterval(() => { t += dir; show();
+    if (dir > 0 && limit && t >= limit) { stopClock(); onEnd && onEnd(true); }
+    if (dir < 0 && t <= 0) { stopClock(); onEnd && onEnd(true); } }, 1000);
+  return () => t;
+}
+function setTop(title, sub, backTo){
+  $('#brand').innerHTML = esc(title) + (sub ? '<s>' + esc(sub) + '</s>' : '');
+  const b = $('#back'); b.classList.toggle('hide', !backTo);
+  b.onclick = () => go(backTo);
+}
+function dots(n, total){
+  if (!total) { stp.classList.add('hide'); return; }
+  stp.classList.remove('hide');
+  stp.innerHTML = Array.from({length: total}, (_, i) => '<div class="' + (i < n ? 'on' : '') + '"></div>').join('');
+}
+function foot(){ return '<div class="foot">读得深 · 三道闸门 Demo · 2026-09<br>'
+  + '本页数据只存在于你的浏览器里，不上传、不保存<br>'
+  + '<a href="https://pumo0926-cpu.github.io/dudeshen-docs/doc-09.html">方案全文 09</a> · '
+  + '<a href="https://pumo0926-cpu.github.io/dudeshen-docs/">项目资料站</a></div>'; }
+function cta(txt, fn, ghost){
+  bar.classList.remove('hide');
+  barbtn.className = 'cta' + (ghost ? ' ghost' : ''); barbtn.textContent = txt;
+  barbtn.disabled = false; barbtn.onclick = fn;
+}
+function noCta(){ bar.classList.add('hide'); }
+function paint(html, after){ main.innerHTML = html; window.scrollTo(0, 0); after && after(); }
+const paras = (arr, cls) => arr.map((p, i) => '<p class="' + (cls || '') + '" data-i="' + i + '">'
+  + p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') + '</p>').join('');
+
+/* ══ 0. 封面 ══ */
+function scIntro(){
+  stopClock(); dots(0, 0); setTop('三道闸门', '初一分诊 Demo', null); noCta();
+  paint('<div class="hero"><span class="tag">DEMO · 初一（七年级上）</span>'
+   + '<h1>先定位，<br>再施治。</h1>'
+   + '<p class="lead">同样是「阅读不好」，卡的可能是三道完全不同的闸门。这个 Demo 让你亲手走一遍分诊，'
+   + '看见自己卡在哪一道，再领一份当天就能练的处方。</p></div>'
+   + '<div class="gates">'
+   + '<div class="gate"><i>I</i><b>输入闸</b><span>认字·词义<br>默读速度</span></div>'
+   + '<div class="gate"><i>P</i><b>加工闸</b><span>推断·结构<br>理解监控</span></div>'
+   + '<div class="gate"><i>O</i><b>输出闸</b><span>审题·要点<br>证据·配速</span></div></div>'
+   + '<div class="card"><div class="eyebrow">这一趟要花</div>'
+   + '<h2 class="sec">约 8 分钟</h2>'
+   + '<p class="sub">真实版首测 20 分钟；Demo 压缩了篇幅与题量，规则完全一致。</p>'
+   + '<table class="rules"><tr><td class="nm">① 限时默读</td><td>' + D.dx.words + ' 字 · 上限 6 分钟</td><td class="vl">测配速</td></tr>'
+   + '<tr><td class="nm">② 八道探针</td><td>每题追一句「有把握吗」</td><td class="vl">测三闸门 ＋ 校准</td></tr>'
+   + '<tr><td class="nm">③ 60 秒复述</td><td>真实版是语音，这里打字</td><td class="vl">测结构成形</td></tr>'
+   + '<tr><td class="nm">④ B 卷重做</td><td>错题重来，可回看原文</td><td class="vl">分开「不会」与「来不及」</td></tr>'
+   + '<tr><td class="nm">⑤ 词义速判</td><td>10 题 · 每题 3 秒</td><td class="vl">测词汇底座</td></tr></table>'
+   + '<p class="note">分诊过程<b>不给对错</b>——给了，B 卷就白做了。所有反馈在报告里一次说清。</p></div>'
+   + '<button class="cta" onclick="go(\'read\')">开始分诊</button>'
+   + '<button class="link" onclick="go(\'skills\')">先看 17 个微技能与 12 周疗程 ›</button>'
+   + foot());
+}
+
+/* ══ 1. 限时默读 ══ */
+function scRead(){
+  dots(1, 5); setTop('① 限时默读', D.dx.title, 'intro');
+  const LIMIT = 360;
+  paint('<div class="card tight"><div class="eyebrow">环节一 / 五</div>'
+   + '<h2 class="sec">' + esc(D.dx.title) + '</h2>'
+   + '<p class="sub">' + D.dx.words + ' 字 · 上限 6 分钟 · 读完就点底部按钮，别回头重读</p></div>'
+   + (D.dx.notes ? '<div class="notes"><b>词语</b>：' + esc(D.dx.notes) + '</div>' : '')
+   + '<div class="txt">' + paras(D.dx.paras) + '</div>', () => {
+    const get = runClock(1, 0, LIMIT, over => finish(over));
+    const finish = over => { stopClock(); S.read = {sec: over ? LIMIT : get(), over: !!over}; go('q'); };
+    cta('我读完了', () => finish(false));
+  });
+}
+
+/* ══ 2. 八道探针 ══ */
+function scQ(i){
+  i = i || 0; stopClock();
+  if (i >= D.dx.probe.length) { go('retell'); return; }
+  const p = D.dx.probe[i]; dots(2, 5); setTop('② 探针 ' + (i+1) + '/8', p.tag, null);
+  let pick = (p.view === 'multi') ? [] : null, sent = null, stage = 0;
+  const optHtml = p.opts.map((o, k) => '<button class="opt" data-k="' + k + '">' + o + '</button>').join('');
+  const evidHtml = '<div id="ev" class="hide"><p class="sub" style="margin:14px 0 8px">'
+    + '从下面六句里<b>点一句</b>能支持你的判断的原文：</p>'
+    + D.dx.evid.map((e, k) => '<button class="sent" data-e="' + k + '">' + esc(e.t) + '</button>').join('') + '</div>';
+  paint('<div class="qh"><small>' + p.layer + ' · ' + p.tag + '</small>' + p.q + '</div>'
+   + optHtml + (p.view === 'evid' ? evidHtml : '')
+   + '<div id="conf" class="hide"><p class="sub" style="margin:18px 0 6px">这题你有把握吗？<b>（必答，用来算校准度）</b></p>'
+   + '<div class="conf"><button data-c="1">有把握</button><button data-c="0">不确定</button></div></div>'
+   + '<p class="note">分诊阶段不显示对错。</p>', () => {
+    noCta();
+    main.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      const k = +b.dataset.k;
+      if (p.view === 'multi') {
+        const at = pick.indexOf(k);
+        if (at >= 0) pick.splice(at, 1); else if (pick.length < 2) pick.push(k);
+        main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', pick.includes(+x.dataset.k)));
+        if (pick.length === 2) $('#conf').classList.remove('hide');
+      } else {
+        pick = k;
+        main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', +x.dataset.k === k));
+        if (p.view === 'evid') { $('#ev').classList.remove('hide'); if (sent !== null) $('#conf').classList.remove('hide'); }
+        else $('#conf').classList.remove('hide');
+      }
+    });
+    main.querySelectorAll('.sent').forEach(b => b.onclick = () => {
+      sent = +b.dataset.e;
+      main.querySelectorAll('.sent').forEach(x => x.setAttribute('aria-pressed', +x.dataset.e === sent));
+      if (pick !== null) $('#conf').classList.remove('hide');
+    });
+    main.querySelectorAll('.conf button').forEach(b => b.onclick = () => {
+      let right;
+      if (p.view === 'multi') right = pick.length === 2 && p.ans.every(a => pick.includes(a));
+      else if (p.view === 'evid') right = (pick === p.ans) && sent !== null && D.dx.evid[sent].ok;
+      else right = pick === p.ans;
+      S.ans[i] = {pick, sent, conf: +b.dataset.c, right, layer: p.layer, tag: p.tag};
+      go('q', i + 1);
+    });
+  });
+}
+
+/* ══ 3. 60 秒复述 ══ */
+function scRetell(){
+  dots(3, 5); setTop('③ 60 秒复述', '不看原文', null);
+  paint('<div class="card tight"><div class="eyebrow">环节三 / 五</div>'
+   + '<h2 class="sec">合上文章，说一遍</h2>'
+   + '<p class="sub">真实版是 60 秒语音，这里用打字。<b>不要回看原文</b>——这一环节测的是结构有没有在脑子里成形。</p></div>'
+   + '<p style="margin:0 0 8px"><b>这篇文章讲了什么？按顺序说。</b></p>'
+   + '<textarea id="rt" placeholder="谁、做了什么、先后顺序、为什么这件事值得写……"></textarea>'
+   + '<div class="cnt"><span id="rc">0</span> 字</div>'
+   + '<div id="hits" class="chips" style="margin-top:10px"></div>'
+   + '<p class="note">判定只看四样东西有没有出现，不看文采。</p>', () => {
+    const ta = $('#rt');
+    const render = () => {
+      const t = ta.value; $('#rc').textContent = t.length;
+      S.retell.txt = t;
+      S.retell.hit = D.dx.retell.map(g => g.kws.some(k => t.includes(k)));
+      $('#hits').innerHTML = D.dx.retell.map((g, i) => '<span class="chip ' + (S.retell.hit[i] ? 'hit' : '') + '">'
+        + (S.retell.hit[i] ? '✓ ' : '') + g.name + '</span>').join('');
+    };
+    ta.oninput = render; render(); ta.focus();
+    runClock(-1, 60, 0, () => { done(); });
+    const done = () => { stopClock(); go('bj'); };
+    cta('说完了', done);
+  });
+}
+
+/* ══ 4. B 卷重做 ══ */
+function scBJ(){
+  stopClock(); dots(4, 5); setTop('④ B 卷重做', '可回看原文', null);
+  const wrong = S.ans.map((a, i) => a && !a.right ? i : -1).filter(i => i >= 0);
+  S.bj.redone = wrong.length;
+  if (!wrong.length) {
+    paint('<div class="card"><div class="eyebrow">环节四 / 五</div><h2 class="sec">A 卷全对，B 卷跳过</h2>'
+     + '<p>B 卷的用处是分开「不会」与「来不及」。你没有错题，说明这道分离器在你身上用不上——'
+     + '差值记 0，判定时按「不是速度问题」处理。</p></div>', () => cta('继续', () => go('vocab')));
+    return;
+  }
+  let idx = 0, showText = false;
+  const one = () => {
+    const i = wrong[idx], p = D.dx.probe[i];
+    let pick = (p.view === 'multi') ? [] : null, sent = null;
+    paint('<div class="card tight"><div class="eyebrow">环节四 / 五 · 第 ' + (idx+1) + '/' + wrong.length + ' 题</div>'
+     + '<h2 class="sec">这题再想一次</h2><p class="sub">不限时，可以回看原文。想清楚再选。</p></div>'
+     + '<button class="cta ghost" id="tg" style="margin:0 0 12px">' + (showText ? '收起原文' : '查看原文') + '</button>'
+     + '<div id="tx" class="txt ' + (showText ? '' : 'hide') + '" style="max-height:44vh;overflow:auto;border:1px solid var(--border);border-radius:14px;padding:12px">'
+     + paras(D.dx.paras) + '</div>'
+     + '<div class="qh"><small>' + p.layer + ' · ' + p.tag + '</small>' + p.q + '</div>'
+     + p.opts.map((o, k) => '<button class="opt" data-k="' + k + '">' + o + '</button>').join('')
+     + (p.view === 'evid' ? '<p class="sub" style="margin:14px 0 8px">再点一句原文作证据：</p>'
+        + D.dx.evid.map((e, k) => '<button class="sent" data-e="' + k + '">' + esc(e.t) + '</button>').join('') : ''), () => {
+      $('#tg').onclick = () => { showText = !showText; $('#tx').classList.toggle('hide', !showText); $('#tg').textContent = showText ? '收起原文' : '查看原文'; };
+      const ready = () => {
+        let ok;
+        if (p.view === 'multi') ok = pick.length === 2; else if (p.view === 'evid') ok = pick !== null && sent !== null; else ok = pick !== null;
+        barbtn.disabled = !ok;
+      };
+      main.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+        const k = +b.dataset.k;
+        if (p.view === 'multi') { const at = pick.indexOf(k); if (at >= 0) pick.splice(at,1); else if (pick.length < 2) pick.push(k);
+          main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', pick.includes(+x.dataset.k))); }
+        else { pick = k; main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', +x.dataset.k === k)); }
+        ready();
+      });
+      main.querySelectorAll('.sent').forEach(b => b.onclick = () => { sent = +b.dataset.e;
+        main.querySelectorAll('.sent').forEach(x => x.setAttribute('aria-pressed', +x.dataset.e === sent)); ready(); });
+      cta('这次就这样', () => {
+        let right;
+        if (p.view === 'multi') right = pick.length === 2 && p.ans.every(a => pick.includes(a));
+        else if (p.view === 'evid') right = (pick === p.ans) && sent !== null && D.dx.evid[sent].ok;
+        else right = pick === p.ans;
+        if (right) S.bj.fixed++;
+        idx++; if (idx < wrong.length) one(); else go('vocab');
+      });
+      barbtn.disabled = true;
+    });
+  };
+  one();
+}
+
+/* ══ 5. 词义速判 ══ */
+function scVocab(){
+  dots(5, 5); setTop('⑤ 词义速判', '每题 3 秒', null); noCta();
+  let i = 0; S.vocab.right = 0;
+  const one = () => {
+    if (i >= D.dx.vocab.length) { stopClock(); go('report'); return; }
+    const v = D.dx.vocab[i];
+    paint('<div class="card tight"><div class="eyebrow">环节五 / 五 · ' + (i+1) + '/' + D.dx.vocab.length + '</div>'
+     + '<h2 class="sec">' + v[0] + '</h2><p class="sub">划线词是什么意思？3 秒内选。</p></div>'
+     + v[1].map((o, k) => '<button class="opt" data-k="' + k + '">' + esc(o) + '</button>').join(''), () => {
+      let done = false;
+      const next = ok => { if (done) return; done = true; stopClock(); if (ok) S.vocab.right++; i++; setTimeout(one, 120); };
+      runClock(-1, 3, 0, () => next(false));
+      main.querySelectorAll('.opt').forEach(b => b.onclick = () => next(+b.dataset.k === v[2]));
+    });
+  };
+  one();
+}
+
+/* ══ 6. 诊断报告 ══ */
+function metrics(){
+  const w = D.dx.words, sec = Math.max(S.read.sec, 1);
+  const wpm = Math.round(w / (sec / 60));
+  const R = (a, b) => S.ans.slice(a, b).filter(x => x && x.right).length;
+  const L1 = R(0,3), L2 = R(3,6), L3 = R(6,8);
+  const mis = S.ans.filter(x => x && x.conf === 1 && !x.right).length;
+  const cov = S.retell.hit.filter(Boolean).length;
+  const ba = S.bj.redone ? S.bj.fixed / D.dx.probe.length : 0;
+  const voc = S.vocab.right, vn = D.dx.vocab.length;
+  const spd = S.read.over ? 0.45 : Math.min(1, wpm / 300);
+  const I = Math.round((0.55 * spd + 0.45 * (voc / vn)) * 100);
+  const P = Math.round((0.55 * (L2/3) + 0.25 * (cov/4) + 0.20 * (1 - mis/8)) * 100);
+  const O = Math.round((0.60 * (L3/2) + 0.25 * (L1/3) + 0.15 * (1 - Math.min(ba,.4)/.4)) * 100);
+  const wtxt = S.read.over ? '超时未读完' : (wpm > 1200 ? '＞1200 字·分（几乎没读）' : wpm + ' 字·分');
+  return {wpm, wtxt, sec, L1, L2, L3, mis, cov, ba, voc, vn, I, P, O, over: S.read.over,
+          structWrong: (S.ans[4] && !S.ans[4].right) || (S.ans[5] && !S.ans[5].right)};
+}
+function judge(m){
+  const pct = x => Math.round(x * 100) + '%';
+  const rows = [
+    {k:'base',   c:'词义速判 < 6/10 且 L1 事实题有错', v: m.voc + '/' + m.vn + ' · L1 ' + m.L1 + '/3',
+     hit: m.voc < 6 && m.L1 < 3},
+    {k:'miscal', c:'「有把握却答错」≥ 3 题（真实版 ≥40%）', v: m.mis + '/8 题',
+     hit: m.mis >= 3},
+    {k:'slow',   c:'没读完 ／ 默读 < 150 字·分 ／ B−A ≥ 25%', v: (m.over ? '超时未读完' : m.wpm + ' 字·分') + ' · B−A ' + pct(m.ba),
+     hit: m.over || m.wpm < 150 || m.ba >= .25},
+    {k:'skim',   c:'默读 ≥ 400 字·分，且 L2 推断题错 ≥ 2', v: m.wpm + ' 字·分 · L2 ' + m.L2 + '/3',
+     hit: m.wpm >= 400 && m.L2 <= 1},
+    {k:'scatter',c:'L1 ≥ 2/3，但结构题错 或 复述覆盖 < 50%', v: 'L1 ' + m.L1 + '/3 · 复述 ' + m.cov + '/4',
+     hit: m.L1 >= 2 && (m.structWrong || m.cov < 2)},
+    {k:'copy',   c:'复述覆盖 ≥ 3/4，但 L3 证据·要点题错 ≥ 1', v: '复述 ' + m.cov + '/4 · L3 ' + m.L3 + '/2',
+     hit: m.cov >= 3 && m.L3 <= 1},
+  ];
+  const first = rows.find(r => r.hit);
+  return {rows, key: first ? first.k : 'even'};
+}
+function scReport(){
+  stopClock(); dots(0, 0); setTop('诊断报告', 'Demo', null);
+  const m = metrics(), j = judge(m);
+  S.prof = D.profiles.find(p => p.k === j.key);
+  const meter = (n, v, cls) => '<div class="meter ' + (cls||'') + '"><div class="lab"><span>' + n + '</span><b>' + v + '</b></div>'
+    + '<div class="track"><i class="fill" style="width:' + v + '%"></i></div></div>';
+  const cls = v => v >= 70 ? 'g' : (v >= 50 ? '' : 'w');
+  paint('<div class="big"><div class="n">' + esc(S.prof.name) + '</div><div class="t">' + esc(S.prof.why) + ' · 主卡在' + esc(S.prof.gate) + '</div></div>'
+   + '<div class="card"><div class="eyebrow">三道闸门</div>'
+   + meter('I　输入闸　认字·词义·默读速度', m.I, cls(m.I))
+   + meter('P　加工闸　推断·结构·理解监控', m.P, cls(m.P))
+   + meter('O　输出闸　审题·要点·证据·配速', m.O, cls(m.O))
+   + '<p class="note">三道闸门是串联的：任何一道堵住，卷面都是低分，而且低分的样子长得一样。</p></div>'
+   + '<div class="card"><div class="eyebrow">你的实测</div><div class="two" style="margin-bottom:10px">'
+   + '<div class="kv"><b>' + (m.over ? '超时' : (m.wpm > 1200 ? '＞1200' : m.wpm)) + '</b><span>'
+   + (m.over ? '6 分钟没读完' : (m.wpm > 1200 ? '字／分：几乎没读' : '字／分（课标 ≥500）')) + '</span></div>'
+   + '<div class="kv"><b>' + (m.L1+m.L2+m.L3) + '/8</b><span>探针答对（L1 ' + m.L1 + '·L2 ' + m.L2 + '·L3 ' + m.L3 + '）</span></div>'
+   + '<div class="kv"><b>' + m.mis + '/8</b><span>有把握却答错</span></div>'
+   + '<div class="kv"><b>' + m.cov + '/4</b><span>复述覆盖（谁·做什么·先后·为什么）</span></div>'
+   + '<div class="kv"><b>' + Math.round(m.ba*100) + '%</b><span>B−A 差值（错题重做改对）</span></div>'
+   + '<div class="kv"><b>' + m.voc + '/' + m.vn + '</b><span>词义速判</span></div></div>'
+   + '<p class="note">B−A 大＝「来不及／没细看」；B−A≈0 且分低＝「真不会」。这是最便宜的一个分离器。</p></div>'
+   + '<div class="card"><div class="eyebrow">判定是怎么来的</div><h2 class="sec">六条规则，逐条对</h2>'
+   + '<p class="sub">命中的第一条即为画像（顺序＝从最底层的病因往上）</p><table class="rules">'
+   + j.rows.map(r => {
+       const p = D.profiles.find(x => x.k === r.k), win = r.k === j.key;
+       return '<tr class="' + (win ? 'hit' : '') + '"><td class="nm">' + esc(p.name)
+         + (win ? '<span class="pill on">判定</span>' : (r.hit ? '<span class="pill">也触发</span>' : ''))
+         + '<br><span style="font-weight:400;font-size:11.5px;color:var(--ink-muted)">' + esc(r.c) + '</span></td>'
+         + '<td class="vl">' + esc(r.v) + '</td></tr>'; }).join('')
+   + '</table><p class="note"><b>多条同时触发是常态</b>——三道闸门是串联的，一处堵住会把下游一起拖低。'
+   + '所以判定取<b>最靠前的那一条</b>（顺序＝从最底层的病因往上），先治底层，上游的症状往往跟着消失。'
+   + '单次分诊只是起点：真实版允许画像两周后才稳定，并每 4 周重判一次。</p></div>'
+   + '<div class="card"><div class="eyebrow">本月处方</div><h2 class="sec">' + esc(S.prof.name) + ' 的时间该怎么分</h2>'
+   + '<p class="sub">同时在训的微技能 ≤ 3 个，多了单元必然超过 15 分钟</p>'
+   + S.prof.rx.map(r => meter(r[0], r[1])).join('')
+   + '<div class="fb ok" style="margin-top:12px"><b>今天就能做的一件事：</b><br>' + esc(S.prof.act) + '</div></div>'
+   + '<div class="card"><div class="eyebrow">同一份结论，三种说法</div><h2 class="sec">画像不给孩子看</h2>'
+   + '<div class="vs"><div class="b no"><em>❌ 不能这么写</em>「孩子属于' + esc(S.prof.name) + '，' + esc(S.prof.gate) + '能力弱。」</div>'
+   + '<div class="b yes"><em>✅ 给家长（动作语言）</em>「本月主攻：' + esc(S.prof.act) + '」<br>'
+   + '「这周他有 4 次做到了，其中 3 次挂住了原文。」</div>'
+   + '<div class="b yes"><em>✅ 给孩子（只剩一句）</em>「' + esc(S.prof.kid) + '」</div></div>'
+   + '<p class="note">标签会自我实现。初中生对「我是差的那一类」极其敏感——所以画像只在内部使用。</p></div>'
+   + foot(), () => cta('领今天的 15 分钟训练块', () => go('train')));
+}
+
+/* ══ 7. 训练块（15 分钟五步，按画像挂靶点）══ */
+const TSTEPS = ['猜','读','问','辨','写'];
+function scTrain(k){
+  k = k || 0; stopClock();
+  if (k >= 5) { go('tdone'); return; }
+  dots(k + 1, 5); setTop(TSTEPS[k] + '　第 ' + (k+1) + ' 步 / 5', D.tr.title, null);
+  [tGuess, tRead, tAsk, tSort, tWrite][k]();
+}
+function stepHead(min, target, desc){
+  return '<div class="card tight"><div class="eyebrow">' + min + '</div>'
+   + (target ? '<h2 class="sec">靶点：' + target + '</h2>' : '<h2 class="sec">常规</h2>')
+   + '<p class="sub" style="margin:0">' + desc + '</p></div>';
+}
+function tGuess(){
+  const g = D.tr.guess; let pick = null;
+  paint(stepHead('第 1 步 · 约 1 分钟', '', '先押一个答案，读的时候就有事可做——这一步不判对错。')
+   + '<div class="qh">' + esc(g.q) + '</div>'
+   + g.options.map((o, i) => '<button class="opt" data-k="' + i + '">' + esc(o) + '</button>').join('')
+   + '<div id="peer" class="peer hide" style="margin-top:14px"></div>', () => {
+    noCta();
+    main.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      pick = +b.dataset.k;
+      main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', +x.dataset.k === pick));
+      $('#peer').classList.remove('hide');
+      $('#peer').innerHTML = '<p class="sub" style="margin:0 0 8px">同龄人怎么押的（模拟数据）</p>'
+        + g.options.map((o, i) => '<div class="r ' + (i === pick ? 'me' : '') + '">'
+          + '<span style="flex:0 0 96px;font-size:12px;color:var(--ink-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(o) + '</span>'
+          + '<span class="bar"><i style="width:' + g.peer[i] + '%"></i></span><span class="v">' + g.peer[i] + '%</span></div>').join('');
+      S.tr.guess = pick; cta('开始读', () => go('train', 1));
+    });
+  });
+}
+function tRead(){
+  paint(stepHead('第 2 步 · 约 5 分钟', 'P7 理解监控', '读的时候<b>必须标出一处「我这里没懂」</b>——全篇都懂，本身就是一个失校准信号。')
+   + '<div class="txt">' + paras(D.tr.paras, 'pick') + '</div>'
+   + '<div id="why" class="hide"><p class="sub" style="margin:12px 0 6px">这一处是哪种不懂？</p>'
+   + ['词不懂','关系不懂（句与句之间）','背景不懂'].map((t, i) => '<button class="opt" data-w="' + i + '">' + t + '</button>').join('') + '</div>', () => {
+    noCta();
+    main.querySelectorAll('.txt p').forEach(p => p.onclick = () => {
+      main.querySelectorAll('.txt p').forEach(x => x.classList.remove('mark'));
+      p.classList.add('mark'); S.tr.mark = +p.dataset.i;
+      $('#why').classList.remove('hide'); $('#why').scrollIntoView({behavior:'smooth', block:'center'});
+    });
+    main.querySelectorAll('[data-w]').forEach(b => b.onclick = () => {
+      S.tr.markWhy = +b.dataset.w;
+      main.querySelectorAll('[data-w]').forEach(x => x.setAttribute('aria-pressed', +x.dataset.w === S.tr.markWhy));
+      cta('去答题', () => go('train', 2));
+    });
+  });
+}
+function tAsk(){
+  let phase = 0, hit = [], cnt = null, pts = [], ev = null;
+  const stem = D.tr.stem;
+  const render = () => {
+    let h = stepHead('第 3 步 · 约 4 分钟', 'O1 题干拆解 ＋ O2 分值→要点数 ＋ O4 证据句', '中考主观题的三个对接口，全部可判定。');
+    h += '<div class="card"><div class="eyebrow">第 ① 关 · O1</div><h3 class="sub3" style="margin-top:0">把题干圈开</h3>'
+      + '<div class="notes" style="margin:0 0 10px">' + esc(D.tr.stemText) + '</div>'
+      + '<p class="sub">在下面点出三样：<b>指令动词</b>（要干什么）、<b>范围限定</b>（在哪找）、<b>数量限定</b>（要几点）。多点了也算没拆对。</p>'
+      + '<div class="chips" id="stem">'
+      + stem.map((t, i) => '<button class="chip" data-s="' + i + '"' + (hit.includes(i) ? ' aria-pressed="true"' : '') + '>' + esc(t.t) + '</button>').join('')
+      + '</div><div id="fb1"></div></div>';
+    if (phase >= 1) h += '<div class="card"><div class="eyebrow">第 ② 关 · O2</div><h3 class="sub3" style="margin-top:0">4 分，写几点？</h3>'
+      + [1,2,3,4].map(n => '<button class="opt" data-n="' + n + '" style="display:inline-block;width:auto;margin-right:8px">' + n + ' 点</button>').join('')
+      + '<div id="fb2"></div></div>';
+    if (phase >= 2) h += '<div class="card"><div class="eyebrow">第 ③ 关</div><h3 class="sub3" style="margin-top:0">' + esc(D.tr.pts.q) + '</h3>'
+      + D.tr.pts.opts.map((o, i) => '<button class="opt" data-p="' + i + '">' + esc(o) + '</button>').join('') + '<div id="fb3"></div></div>';
+    if (phase >= 3) h += '<div class="card"><div class="eyebrow">第 ④ 关 · O4</div><h3 class="sub3" style="margin-top:0">给你的要点挂一句原文</h3>'
+      + '<p class="sub">挂不住的那一点，八成不是答案。</p>'
+      + D.tr.evid.map((e, i) => '<button class="sent" data-v="' + i + '">' + esc(e.t) + '</button>').join('') + '<div id="fb4"></div></div>';
+    paint(h, wire);
+  };
+  const wire = () => {
+    noCta();
+    main.querySelectorAll('#stem .chip').forEach(b => b.onclick = () => {
+      const i = +b.dataset.s;
+      const at = hit.indexOf(i); if (at >= 0) hit.splice(at, 1); else hit.push(i);
+      b.setAttribute('aria-pressed', hit.includes(i));
+      const kinds = new Set(hit.filter(x => stem[x].k).map(x => stem[x].k));
+      const extra = hit.filter(x => !stem[x].k).length;
+      if (kinds.size === 3 && extra === 0) {
+        S.tr.o1 = true; phase = Math.max(phase, 1);
+        $('#fb1').innerHTML = '<div class="fb ok">✓ 三样齐了：<b>说说</b>（要干什么）· <b>第④⑤段</b>（在哪找）· <b>答两点</b>（要几点）。'
+          + '「4 分」是赋分，不是数量限定——它决定要点数，下一关就用它。连续 3 次拆全才算过关。</div>';
+        setTimeout(render, 900);
+      } else if (hit.length >= 3) {
+        $('#fb1').innerHTML = '<div class="fb bad">还不对。三样各一个：<b>要干什么</b>（一个动词）、<b>在哪找</b>（段落范围）、<b>要几点</b>（数量）。'
+          + '其余的词——包括「4 分」——都不是限定词。</div>';
+      } else $('#fb1').innerHTML = '';
+    });
+    main.querySelectorAll('[data-n]').forEach(b => b.onclick = () => {
+      cnt = +b.dataset.n;
+      main.querySelectorAll('[data-n]').forEach(x => x.classList.remove('right','wrong'));
+      b.classList.add(cnt === 2 ? 'right' : 'wrong');
+      S.tr.o2 = cnt === 2;
+      $('#fb2').innerHTML = cnt === 2
+        ? '<div class="fb ok">✓ 4 分 → 2 点。踩点给分：要点数由分值决定，不由你写了多长决定。</div>'
+        : '<div class="fb bad">4 分题按 2 分一点拆，应是 <b>2 点</b>。只写 1 点，先丢一半。</div>';
+      phase = Math.max(phase, 2); setTimeout(render, 700);
+    });
+    main.querySelectorAll('[data-p]').forEach(b => b.onclick = () => {
+      const i = +b.dataset.p, at = pts.indexOf(i);
+      if (at >= 0) pts.splice(at, 1); else if (pts.length < 2) pts.push(i);
+      main.querySelectorAll('[data-p]').forEach(x => x.setAttribute('aria-pressed', pts.includes(+x.dataset.p)));
+      if (pts.length === 2) {
+        const ok = D.tr.pts.ans.every(a => pts.includes(a)); S.tr.pts = ok;
+        $('#fb3').innerHTML = ok ? '<div class="fb ok">✓ 两点正好是同一个机制的两面——这就是第三个原因被放在最后的理由。</div>'
+          : '<div class="fb bad">再想想：作者把第三个原因放最后，是因为它<b>同时</b>解释了「为什么牢」和「为什么不准」。</div>';
+        phase = Math.max(phase, 3); setTimeout(render, 900);
+      }
+    });
+    main.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
+      ev = +b.dataset.v; const e = D.tr.evid[ev]; S.tr.o4 = e.ok;
+      main.querySelectorAll('[data-v]').forEach(x => x.classList.remove('right','wrong'));
+      b.classList.add(e.ok ? 'right' : 'wrong');
+      $('#fb4').innerHTML = '<div class="fb ' + (e.ok ? 'ok' : 'bad') + '">' + (e.ok ? '✓ ' : '✗ ') + esc(e.why) + '</div>';
+      cta('下一步：把文章切开', () => go('train', 3));
+    });
+    if (phase >= 3 && ev !== null) cta('下一步：把文章切开', () => go('train', 3));
+  };
+  render();
+}
+function tSort(){
+  let cuts = [];
+  const render = () => {
+    let h = stepHead('第 4 步 · 约 2 分钟', 'P4 结构切块 ＋ P5 主旨压缩', '概括题抓不准，十有八九是结构没切开。先切块，再压一句话。');
+    h += '<div class="card"><div class="eyebrow">切块</div><p class="sub">在段落之间切<b>两刀</b>，把全文分成三块。</p><div class="txt" style="font-size:15px">';
+    D.tr.paras.forEach((p, i) => {
+      if (i > 0) h += '<div class="cut ' + (cuts.includes(i) ? 'on' : '') + '"><button data-c="' + i + '">'
+        + (cuts.includes(i) ? '✂︎ 已切' : '＋ 在这里切一刀') + '</button></div>';
+      h += '<p style="font-size:15px;line-height:1.9">' + p.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') + '</p>';
+    });
+    h += '</div><div id="fb5"></div></div>';
+    if (S.tr.p4 !== undefined) h += '<div class="card"><div class="eyebrow">小标题</div>'
+      + '<p class="sub">给每块起一个 ≤6 字、<b>带动作</b>的小标题</p>'
+      + [0,1,2].map(i => '<input type="text" maxlength="6" data-t="' + i + '" placeholder="第 ' + (i+1) + ' 块，如「三个原因」" style="margin-bottom:8px">').join('')
+      + '<h3 class="sub3">P5 一句话说清全文</h3><p class="sub">≤30 字，要有主体和主事件，不要「表达了作者的思想感情」这类套话</p>'
+      + '<textarea id="main1" style="min-height:70px" placeholder="童年的事记得牢，是因为……"></textarea>'
+      + '<div class="cnt"><span id="mc">0</span>/30 字</div><div id="fb6"></div></div>';
+    paint(h, wire);
+  };
+  const wire = () => {
+    noCta();
+    main.querySelectorAll('[data-c]').forEach(b => b.onclick = () => {
+      const i = +b.dataset.c, at = cuts.indexOf(i);
+      if (at >= 0) cuts.splice(at, 1); else if (cuts.length < 2) cuts.push(i);
+      cuts.sort((a, b2) => a - b2);
+      if (cuts.length === 2) {
+        const [c1, c2] = cuts, [s1, s2] = D.tr.cuts, t = D.tr.tol;
+        const ok = Math.abs(c1 - s1) <= t && Math.abs(c2 - s2) <= t;
+        S.tr.p4 = ok;
+        setTimeout(() => { render();
+          $('#fb5').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✓ ' : '△ ')
+           + '标准切法是 <b>第①②段｜第③④⑤段｜第⑥段起</b>：提出问题 ｜ 三个原因 ｜ 牢与准的两面。'
+           + (ok ? '你的切法在容差内。' : '你的两刀差得有点远——再看一眼哪里出现了「但是」「所以」这类转折词。') + '</div>'; }, 60);
+      } else render();
+    });
+    const inp = main.querySelectorAll('[data-t]');
+    const ta = $('#main1');
+    const check = () => {
+      const titles = [...inp].map(x => x.value.trim());
+      const t = ta ? ta.value.trim() : '';
+      if (ta) $('#mc').textContent = t.length;
+      const okT = titles.length === 3 && titles.every(x => x.length >= 2 && x.length <= 6);
+      const okM = t.length >= 8 && t.length <= 30 && D.tr.mainkw.some(k => t.includes(k));
+      S.tr.titles = okT; S.tr.p5 = okM;
+      if (okT && okM) {
+        $('#fb6').innerHTML = '<div class="fb ok">✓ 三块都有了标题，主旨也压进了 30 字以内。'
+          + '同一项技能在<b>三篇不同文本</b>上连续达标，才算过关。</div>';
+        cta('最后一步：写一句', () => go('train', 4));
+      } else { $('#fb6') && ($('#fb6').innerHTML = ''); noCta(); }
+    };
+    inp.forEach(x => x.oninput = check); if (ta) ta.oninput = check;
+  };
+  render();
+}
+function tWrite(){
+  paint(stepHead('第 5 步 · 约 2 分钟', '一次最低门槛输出', '证据最强的一环（写作回应文本 ES≈+0.40），所以它<b>不可跳过</b>——但门槛只有一句话。')
+   + '<div class="qh">读完这篇，你想起自己的哪一件小时候的事？它更可能属于「牢」的那一半，还是「准」要打问号的那一半？</div>'
+   + '<textarea id="w" placeholder="写一句就行，15 个字起步。"></textarea>'
+   + '<div class="cnt"><span id="wc">0</span> 字 · 门槛 15 字</div>'
+   + '<div class="fb">产品里这里原本有一个「跳过」按钮。07 的审查结论是：<b>把效应量最大的零件做成选项，等于没做。</b>'
+   + '所以「跳过」被改成了「只写一句」——退出通道还在，但退出的终点仍然是一次输出。</div>', () => {
+    const ta = $('#w');
+    ta.oninput = () => { $('#wc').textContent = ta.value.trim().length;
+      const ok = ta.value.trim().length >= 15; S.tr.write = ok;
+      ok ? cta('今天读完了', () => go('tdone')) : noCta(); };
+    noCta();
+  });
+}
+function scTDone(){
+  stopClock(); dots(5, 5); setTop('今天读完了', D.tr.title, null);
+  const done = [
+    ['P7','理解监控', S.tr.markWhy !== undefined],
+    ['O1','题干拆解', !!S.tr.o1],
+    ['O2','分值→要点数', !!S.tr.o2],
+    ['O4','证据句挂钩', !!S.tr.o4],
+    ['P4','结构切块', !!S.tr.p4],
+    ['P5','主旨压缩', !!S.tr.p5],
+  ];
+  const n = done.filter(d => d[2]).length;
+  paint('<div class="big"><div class="n">' + n + '/6</div><div class="t">今天这一篇上达标的微技能</div></div>'
+   + '<div class="card"><div class="eyebrow">判定</div>'
+   + done.map(d => '<div class="sk"><span class="id">' + d[0] + '</span><span class="b"><b>' + d[1] + '</b>'
+     + '<span>' + (d[2] ? '本篇达标 · 进度 1/3' : '本篇未达标 · 进度 0/3') + '</span></span>'
+     + '<span class="st ' + (d[2] ? 'on' : '') + '">' + (d[2] ? '✓ 达标' : '再来') + '</span></div>').join('')
+   + '<p class="note"><b>过关＝在三篇不同文本上连续达标</b>（防止「这篇正好会」）。过关后第 2 周、第 6 周各回测一次；回测失败就降级回训练池，但进度不清零。</p></div>'
+   + '<div class="card"><div class="eyebrow">这 15 分钟里发生了什么</div>'
+   + '<table class="rules"><tr><td class="nm">猜</td><td>先押一个答案，读的时候有事可做</td></tr>'
+   + '<tr><td class="nm">读</td><td>必须标一处没懂 —— 理解监控</td></tr>'
+   + '<tr><td class="nm">问</td><td>审题 → 要点数 → 答点 → 挂证据</td></tr>'
+   + '<tr><td class="nm">辨</td><td>切块 → 起标题 → 压一句话</td></tr>'
+   + '<tr><td class="nm">写</td><td>一次最低门槛输出，不可跳过</td></tr></table>'
+   + '<p class="note">五步没变（05 的猜·读·问·辨·写），变的只是每一步挂了什么靶点。靶点按画像轮换，篇目不变、时长不变。</p></div>'
+   + foot(), () => cta('看 17 个微技能与 12 周疗程', () => go('skills')));
+}
+
+/* ══ 8. 微技能面板 / 疗程 / 说明 ══ */
+function scSkills(){
+  stopClock(); dots(0, 0); setTop('17 个微技能', '可训练＝可判定', null);
+  const doneMap = {P7: S.tr.markWhy !== undefined, O1: !!S.tr.o1, O2: !!S.tr.o2, O4: !!S.tr.o4, P4: !!S.tr.p4, P5: !!S.tr.p5};
+  const rx = S.prof ? S.prof.rx.map(r => r[0]).join(' ') : '';
+  paint('<div class="card"><div class="eyebrow">规则</div><h2 class="sec">写不出过关标准的，不写进课表</h2>'
+   + '<p>一项能力如果说不出「做到什么算过关」，它就不可训练，只能被消费。下面每一项都带判定条件，'
+   + '其中 <b>6 项全员必练</b>，其余按画像启用。</p></div>'
+   + D.skills.map(g => '<div class="card"><div class="eyebrow">闸门 ' + g[0] + ' · ' + g[1] + '</div>'
+     + g[2].map(s => {
+         const star = D.star.includes(s[0]), core = D.core.includes(s[0]);
+         const st = doneMap[s[0]] ? 'on' : (rx.includes(s[0]) ? 'tr' : '');
+         const lab = doneMap[s[0]] ? '✓ 1/3' : (rx.includes(s[0]) ? '在训' : (core ? '必练' : '未测'));
+         return '<div class="sk"><span class="id">' + s[0] + '</span><span class="b"><b>' + s[1]
+           + (star ? ' ⭐' : '') + '</b><span>' + esc(s[2]) + '</span></span><span class="st ' + st + '">' + lab + '</span></div>'; }).join('')
+     + '</div>').join('')
+   + '<p class="note">⭐ ＝主干技能；同时在训 ≤3 个。全员必练六项：P4 结构切块 · P5 主旨压缩 · P7 理解监控 · O1 题干拆解 · O2 分值→要点数 · O4 证据句挂钩。</p>'
+   + foot(), () => cta('看 12 周疗程', () => go('plan')));
+}
+function scPlan(){
+  stopClock(); dots(0, 0); setTop('12 周疗程', '每天 15 分钟', null);
+  const ph = [
+    ['定位期','第 1–2 周','画像成形、建立输出习惯','全员：P7 ＋ O1 ＋ 每篇一句话输出','画像稳定；输出率 ≥70%'],
+    ['主攻期','第 3–8 周','攻画像的主病因','按处方，同时在训 ≤3 项','每 4 周至少 2 个微技能过关'],
+    ['合拢期','第 9–11 周','三闸门串起来','审题→定位→切块→要点→证据 跑单篇','周测 O2/O4 达标率 ≥80%'],
+    ['回测期','第 12 周','迁移验证','产品外陌生文本盲测','与第 1 周同难度基线对比'],
+  ];
+  paint('<div class="card"><div class="eyebrow">节奏</div><h2 class="sec">每天 15 分钟 × 5 天 ＋ 1 次周测</h2>'
+   + '<p class="sub">嵌进首月已定的内容节奏（12 篇精读 ＋ 16 则晨读），<b>不新增时长，只换靶点</b>。</p>'
+   + '<div class="tl">' + ph.map(p => '<div class="ph"><b>' + p[0] + '</b><i>' + p[1] + '</i>'
+     + '<p>' + p[2] + '<br><span style="color:var(--ink-muted)">靶点：' + p[3] + '</span>'
+     + '<br><span style="color:var(--accent)">验收：' + p[4] + '</span></p></div>').join('') + '</div></div>'
+   + '<div class="card"><div class="eyebrow">怎么知道有没有用</div><h2 class="sec">四层指标</h2>'
+   + '<table class="rules"><tr><td class="nm">诊断</td><td>两周内画像稳定率</td><td class="vl">≥80%</td></tr>'
+   + '<tr><td class="nm">过程</td><td>带证据的输出率</td><td class="vl">≥70%</td></tr>'
+   + '<tr><td class="nm">训练</td><td>月度微技能过关数</td><td class="vl">≥2 个</td></tr>'
+   + '<tr><td class="nm">迁移</td><td>12 周产品外盲测 vs 第 1 周基线</td><td class="vl">显著优于</td></tr></table>'
+   + '<p class="note">完成率仍是北极星（它决定商业存活），但效果指标是输出率与过关数——两套指标不能混用。</p></div>'
+   + '<div class="card"><div class="eyebrow">怎么杀死这个方案</div><h2 class="sec">分诊值不值得做，要能被证伪</h2>'
+   + '<p>A 组分诊施治，B 组不分诊走统一课表，12 周后比微技能过关数与盲测迁移分。'
+   + '<b>A 组不显著优于 B 组，就砍掉分诊</b>——它是纯成本，不产生内容价值。</p>'
+   + '<p class="note">样本量：预期 d≈0.3、α=0.05、power=0.8 → 每组约 175 人。</p></div>'
+   + '<div class="card"><div class="eyebrow">关于这个 Demo</div>'
+   + '<p>选文与练习取自首月内容库（原创选文版权自持；课内篇目与公版名著另行标注）。'
+   + '分诊探针、靶点交互、判定阈值按方案 09 实现，为便于试玩做了压缩：首测 20 分钟→8 分钟，词义速判 20 题→10 题。</p>'
+   + '<p>同龄人分布为模拟数据。你的作答只留在本机内存里，刷新即清空，不上传任何服务器。</p></div>'
+   + foot(), () => cta('再测一次', () => { location.reload(); }, true));
+}
+
+/* ══ 路由 ══ */
+const R = {intro: scIntro, read: scRead, q: scQ, retell: scRetell, bj: scBJ, vocab: scVocab,
+           report: scReport, train: scTrain, tdone: scTDone, skills: scSkills, plan: scPlan};
+function go(name, arg){ (R[name] || scIntro)(arg); }
+go('intro');
+</script>
+</body>
+</html>
