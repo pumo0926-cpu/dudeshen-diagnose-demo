@@ -582,6 +582,7 @@ function scBJ(){
         let ok;
         if (p.view === 'multi') ok = pick.length === 2; else if (p.view === 'evid') ok = pick !== null && sent !== null; else ok = pick !== null;
         barbtn.disabled = !ok;
+        barbtn.textContent = ok ? K('就选这个', '这次就这样') : K('先选一个答案', '先选一个答案');
       };
       main.querySelectorAll('.opt').forEach(b => b.onclick = () => {
         const k = +b.dataset.k;
@@ -592,7 +593,7 @@ function scBJ(){
       });
       main.querySelectorAll('.sent').forEach(b => b.onclick = () => { sent = +b.dataset.e;
         main.querySelectorAll('.sent').forEach(x => x.setAttribute('aria-pressed', +x.dataset.e === sent)); ready(); });
-      cta(K('就选这个', '这次就这样'), () => {
+      cta(K('先选一个答案', '先选一个答案'), () => {
         let right;
         if (p.view === 'multi') right = pick.length === 2 && p.ans.every(a => pick.includes(a));
         else if (p.view === 'evid') right = (pick === p.ans) && sent !== null && D.dx.evid[sent].ok;
@@ -600,7 +601,7 @@ function scBJ(){
         if (right) S.bj.fixed++;
         idx++; if (idx < wrong.length) one(); else go('vocab');
       });
-      barbtn.disabled = true;
+      barbtn.disabled = true; barbtn.textContent = K('先选一个答案', '先选一个答案');
     });
   };
   one();
@@ -791,7 +792,8 @@ function tGuess(){
         '先押一个答案，读的时候就有事可做——这一步不判对错。'))
    + '<div class="qh">' + esc(g.q) + '</div>'
    + g.options.map((o, i) => '<button class="opt" data-k="' + i + '"' + (i === pick ? ' aria-pressed="true"' : '') + '>' + esc(o) + '</button>').join('')
-   + '<div id="peer" class="peer ' + (pick === null ? 'hide' : '') + '" style="margin-top:14px">' + (pick === null ? '' : peerHTML()) + '</div>', () => {
+   + '<div id="peer" class="peer ' + (pick === null ? 'hide' : '') + '" style="margin-top:14px">' + (pick === null ? '' : peerHTML()) + '</div>'
+   + (pick === null ? '<div class="fb">选一个就能往下走，这题不算对错。</div>' : ''), () => {
     noCta();
     if (pick !== null) cta('开始读', () => go('train', 1));
     main.querySelectorAll('.opt').forEach(b => b.onclick = () => {
@@ -813,21 +815,26 @@ function tRead(){
    + ['词不懂','关系不懂（句与句之间）','背景不懂'].map((t, i) => '<button class="opt" data-w="' + i + '"'
        + (S.tr.markWhy === i ? ' aria-pressed="true"' : '') + '>' + t + '</button>').join('')
    + (S.tr.markWhy !== undefined ? '<div id="kfb" class="fb ok">标出来就行。这一处先记着，等会儿答题时再回来看一眼。</div>' : '')
-   + '</div>', () => {
+   + '</div><div id="rneed"></div>', () => {
+    const need = () => { const el = $('#rneed'); if (!el) return;
+      el.innerHTML = (S.tr.markWhy !== undefined) ? ''
+        : '<div class="fb">还差：' + (S.tr.mark === undefined ? '<b>点一下任意一段</b>，标出你没看懂的地方' : '再选一下<b>是哪种不懂</b>') + '</div>'; };
     noCta();
     if (marked) { const el = main.querySelectorAll('.txt p')[S.tr.mark]; if (el) el.classList.add('mark'); }
     if (S.tr.markWhy !== undefined) cta('去答题', () => go('train', 2));
+    need();
     main.querySelectorAll('.txt p').forEach(p2 => p2.onclick = () => {
       main.querySelectorAll('.txt p').forEach(x => x.classList.remove('mark'));
       p2.classList.add('mark'); S.tr.mark = +p2.dataset.i;
-      $('#why').classList.remove('hide'); $('#why').scrollIntoView({behavior:'smooth', block:'center'});
+      $('#why').classList.remove('hide'); need();
+      $('#why').scrollIntoView({behavior:'smooth', block:'center'});
     });
     main.querySelectorAll('[data-w]').forEach(b => b.onclick = () => {
       S.tr.markWhy = +b.dataset.w;
       main.querySelectorAll('[data-w]').forEach(x => x.setAttribute('aria-pressed', +x.dataset.w === S.tr.markWhy));
       if (!$('#kfb')) $('#why').insertAdjacentHTML('beforeend',
         '<div id="kfb" class="fb ok">标出来就行。这一处先记着，等会儿答题时再回来看一眼。</div>');
-      cta('去答题', () => go('train', 2));
+      need(); cta('去答题', () => go('train', 2));
     });
   });
 }
@@ -979,7 +986,14 @@ function tSort(){
       + K('30 字以内。别写「表达了作者的思想感情」——那句话放哪篇都通，等于没说。',
           '≤30 字，要有主体和主事件，不要「表达了作者的思想感情」这类套话') + '</p>'
       + '<textarea id="main1" style="min-height:70px" placeholder="童年的事记得牢，是因为……">' + esc(so.main) + '</textarea>'
-      + '<div class="cnt"><span id="mc">' + so.main.length + '</span>/30 字</div><div id="fb6"></div></div>';
+      + '<div class="cnt"><span id="mc">' + so.main.length + '</span> 字 · 8 字起，30 字以内最好</div>'
+      + '<details class="ex"><summary>不知道怎么写？看看写法 ›</summary><div class="in">'
+      + '<p style="margin:0 0 6px"><b>骨架：</b>谁／什么　＋　怎么样　＋　结果或原因</p>'
+      + '<p style="margin:0 0 6px">换一篇举例——《我的第一次值日》：<br>'
+      + '<span class="mk">一次值日让我发现，教室的干净是有人做出来的。</span></p>'
+      + '<p style="margin:6px 0 0;font-size:12.5px;color:var(--ink-muted)">别写「表达了作者的思想感情」：这句话放哪篇都通，等于没说。</p>'
+      + '</div></details>'
+      + '<div id="need"></div><div id="fb6"></div></div>';
     paint(h, wire, keep);
   };
   const wire = () => {
@@ -1002,17 +1016,39 @@ function tSort(){
     const check = () => {
       so.titles = [...inp].map(x => x.value.trim());
       so.main = ta ? ta.value.trim() : '';
-      if (ta) $('#mc').textContent = so.main.length;
-      const okT = so.titles.length === 3 && so.titles.every(x => x.length >= 2 && x.length <= 6);
-      const okM = so.main.length >= 8 && so.main.length <= 30 && D.tr.mainkw.some(k => so.main.includes(k));
+      const L = so.main.length;
+      if (ta) { $('#mc').textContent = L; $('#mc').style.color = L > 30 ? 'var(--warn)' : ''; }
+      const filledT = so.titles.filter(x => x.length >= 1).length;
+      const cliche = /表达了作者|思想感情|中心思想/.test(so.main);
+      // 达标（内部判定，进微技能记录）
+      const okT = filledT === 3 && so.titles.every(x => x.length >= 2 && x.length <= 6);
+      const okM = L >= 8 && L <= 30 && !cliche && D.tr.mainkw.some(k => so.main.includes(k));
+      // 放行（能不能去第 5 步）：门槛压到最低，不把人卡死
+      const pass = filledT === 3 && L >= 8;
       S.tr.titles = okT; S.tr.p5 = okM;
-      if (okT && okM) {
-        $('#fb6').innerHTML = '<div class="fb ok">✓ 三块都起了名字，一句话也压进 30 字了。'
-          + K('这件事得连着三篇都做到才算真会——今天是第一篇。', '同一项技能在<b>三篇不同文本</b>上连续达标，才算过关。') + '</div>';
-        cta('最后一步：写一句', () => go('train', 4));
-      } else { if ($('#fb6')) $('#fb6').innerHTML = ''; noCta(); }
+      if (!$('#need')) return;
+      if (!pass) {                                   // 还差什么，逐条说清楚
+        const need = [];
+        if (filledT < 3) need.push('还有 <b>' + (3 - filledT) + '</b> 块没起名字');
+        if (L < 8) need.push('一句话还差 <b>' + (8 - L) + '</b> 字');
+        $('#need').innerHTML = '<div class="fb">还差：' + need.join(' ｜ ') + '<br>'
+          + '<span style="color:var(--ink-muted)">填齐就能去下一步。</span></div>';
+        $('#fb6').innerHTML = ''; noCta();
+        return;
+      }
+      const tips = [];
+      if (!okT) tips.push('小标题最好每块 2–6 个字');
+      if (cliche) tips.push('把「表达了作者的思想感情」这类套话换掉——放哪篇都通，等于没说');
+      else if (L > 30) tips.push('这句 ' + L + ' 字，删到 30 字以内更好');
+      else if (L >= 8 && !D.tr.mainkw.some(k => so.main.includes(k))) tips.push('最好把这篇的关键词带进去（记忆／童年／牢／准）');
+      $('#need').innerHTML = '';
+      $('#fb6').innerHTML = (okT && okM)
+        ? '<div class="fb ok">✓ 三块都起了名字，一句话也压进 30 字了。'
+          + K('这件事得连着三篇都做到才算真会——今天是第一篇。', '同一项技能在<b>三篇不同文本</b>上连续达标，才算过关。') + '</div>'
+        : '<div class="fb">够了，可以往下走。<br><span style="color:var(--ink-muted)">要更好的话：' + tips.join('；') + '。</span></div>';
+      cta('最后一步：写一句', () => go('train', 4));
     };
-    inp.forEach(x => x.oninput = check); if (ta) { ta.oninput = check; if (so.main) check(); }
+    inp.forEach(x => x.oninput = check); if (ta) { ta.oninput = check; check(); }
   };
   render(false);
 }
@@ -1023,12 +1059,15 @@ function tWrite(){
    + '<div class="qh">读完这篇，你想起自己小时候的哪件事？你觉得它更像是「记得牢」的那一半，还是「记不准」的那一半？</div>'
    + '<textarea id="w" placeholder="写一句就行，15 个字起步。">' + esc(S.tr.writeText || '') + '</textarea>'
    + '<div class="cnt"><span id="wc">' + (S.tr.writeText || '').length + '</span> 字 · ' + K('满 15 字就能收工', '门槛 15 字') + '</div>'
+   + '<div id="wneed"></div>'
    + K('<div class="fb">写完这句，今天这一篇就完了。不用写长，写你真想到的那件事就行。</div>',
        '<div class="fb">产品里这里原本有一个「跳过」按钮。07 的审查结论是：<b>把效应量最大的零件做成选项，等于没做。</b>'
        + '所以「跳过」被改成了「只写一句」——退出通道还在，但退出的终点仍然是一次输出。</div>'), () => {
     const ta = $('#w');
     const check = () => { const v = ta.value.trim(); S.tr.writeText = ta.value;
       $('#wc').textContent = v.length; S.tr.write = v.length >= 15;
+      const nd = $('#wneed');
+      if (nd) nd.innerHTML = S.tr.write ? '' : '<div class="fb">还差 <b>' + (15 - v.length) + '</b> 字就能收工。</div>';
       S.tr.write ? cta('今天读完了', () => go('tdone')) : noCta(); };
     ta.oninput = check; noCta(); check();
   });

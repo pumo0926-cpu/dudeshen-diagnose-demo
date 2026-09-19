@@ -105,7 +105,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
   let guard = 0;
   while ((await txt()).includes('这题再想一次') && guard++ < 8) {
-    if (guard === 1) ok((await txt()).includes('翻回去看'), '「再来一次」用孩子话说明可翻原文');
+    if (guard === 1) {
+      ok((await txt()).includes('翻回去看'), '「再来一次」用孩子话说明可翻原文');
+      ok((await ev(`document.querySelector('#barbtn').textContent`)).includes('先选一个'), 'B 卷未选时按钮说明为什么点不动');
+    }
     const hasSent = await ev(`!!document.querySelector('.sent')`);
     await ev(`document.querySelectorAll('.opt')[0].click()`); await sleep(60);
     if (hasSent) { await ev(`document.querySelectorAll('.sent')[1].click()`); await sleep(60); }
@@ -149,6 +152,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await ev(`document.querySelector('#barbtn').click()`); await sleep(250);
   t = await txt();
   ok(t.includes('没看懂') && !/P7|理解监控/.test(t), '第 2 步：说「标一处没看懂」，不说 P7');
+  ok(t.includes('还差：') && t.includes('点一下任意一段'), '第 2 步没标时明说还差什么');
   ok(await ev(`document.querySelectorAll('.txt .pn').length === 10`), '训练篇也有段号');
   await ev(`document.querySelectorAll('.txt p')[4].click()`); await sleep(150);
   await ev(`document.querySelectorAll('[data-w]')[1].click()`); await sleep(200);
@@ -205,10 +209,29 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await ev(`(()=>{const a=document.querySelector('#main1');a.value='童年的事记得牢，是因为第一次多、情绪强、被反复讲述';a.dispatchEvent(new Event('input'))})()`);
   await sleep(250);
   ok(await ev(`S.tr.p5 === true`), '一句话主旨判过');
+  // 曾经静默卡死的三条路径：不含关键词 / 超 30 字 / 少填一个小标题
+  const sortCase = async (titles, main) => {
+    await ev(`document.querySelectorAll('[data-t]').forEach((x,i)=>{x.value=${JSON.stringify(titles)}[i];x.dispatchEvent(new Event('input'))})`);
+    await ev(`(()=>{const a=document.querySelector('#main1');a.value=${JSON.stringify(main)};a.dispatchEvent(new Event('input'))})()`);
+    await sleep(200);
+    return {blocked: await ev(`document.querySelector('#bar').classList.contains('hide')`),
+            hint: await ev(`['#need','#fb6'].map(q=>document.querySelector(q)?document.querySelector(q).textContent.trim():'').filter(Boolean).join(' ')`)};
+  };
+  let c = await sortCase(['提出问题','三个原因','两面'], '小时候的事记得特别清楚，因为第一次多、情绪强、常被提起');
+  ok(!c.blocked && c.hint.includes('够了，可以往下走'), '主旨没带关键词：能走，并说明怎样更好');
+  c = await sortCase(['提出问题','三个原因','两面'], '童年的事之所以记得特别牢，是因为第一次特别多、情绪来得猛，而且总是被家里人反复提起');
+  ok(!c.blocked && /删到 30 字以内/.test(c.hint), '主旨写太长：能走，并提示删到 30 字内');
+  c = await sortCase(['提出问题','三个原因',''], '童年的事记得牢，是因为第一次多');
+  ok(c.blocked && c.hint.includes('还有 1 块没起名字'), '少填一个小标题：挡住，但说清还差什么');
+  c = await sortCase(['提出问题','三个原因','两面'], '童年的事记得牢，是因为第一次多、情绪强、被反复讲述');
+  ok(!c.blocked, '填齐后恢复可继续');
   await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
   t = await txt();
   ok(t.includes('写一句') && !/效应量|ES≈/.test(t), '第 5 步：不对孩子讲效应量');
   ok(await ev(`document.querySelector('#bar').classList.contains('hide')`), '不满 15 字不能收工');
+  await ev(`(()=>{const a=document.querySelector('#w');a.value='才写了几个字';a.dispatchEvent(new Event('input'))})()`);
+  await sleep(150);
+  ok((await txt()).includes('还差'), '第 5 步告诉还差几个字');
   await ev(`(()=>{const a=document.querySelector('#w');a.value='我记得一年级掉了第一颗牙，可能是我妈讲得太多次了';a.dispatchEvent(new Event('input'))})()`);
   await sleep(200);
   ok(!(await ev(`document.querySelector('#bar').classList.contains('hide')`)), '满 15 字可收工');
