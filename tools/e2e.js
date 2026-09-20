@@ -137,6 +137,39 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok((await txt()).includes('按你说的') || (await txt()).includes('一样'), '自评后给回应');
   ok(await ev(`S.self === 1`), '自评被记录');
 
+  console.log('\n[5.5] 说好要讲的八道，讲评与订正');
+  ok((await txt()).includes('刚才那八道，一起看一遍'), '报告页给出讲评入口');
+  await ev(`document.querySelector('#toReview').click()`); await sleep(350);
+  t = await txt();
+  ok(t.includes('八道题，对了'), '逐题讲评页');
+  ok(await ev(`document.querySelectorAll('.card .qh').length === 8`), '八道题全部列出');
+  ok(await ev(`[...document.querySelectorAll('.fb.ok')].filter(x=>x.textContent.includes('正解')).length === 8`), '每道都给正解');
+  ok(await ev(`document.querySelectorAll('details.ex').length >= 6`), '能展开原文出处');
+  ok(await ev(`[...document.querySelectorAll('.pill')].some(x=>x.textContent.includes('你说过有底'))`), '标出「说有底却答错」的题');
+  await shot('k05b-review');
+  const nWrong = await ev(`S.ans.filter(a=>a&&!a.right).length`);
+  ok((await ev(`document.querySelector('#barbtn').textContent`)).includes('订正'), '底部按钮进入订正', nWrong + ' 道错题');
+  await ev(`document.querySelector('#barbtn').click()`); await sleep(320);
+  ok((await txt()).includes('再做一遍'), '进入订正');
+  for (let k = 0; k < nWrong; k++) {
+    const view = await ev(`(()=>{const w=S.ans.map((a,i)=>a&&!a.right?i:-1).filter(i=>i>=0);return D.dx.probe[w[S.fix.at]].view||'single'})()`);
+    const ansIdx = await ev(`(()=>{const w=S.ans.map((a,i)=>a&&!a.right?i:-1).filter(i=>i>=0);return JSON.stringify(D.dx.probe[w[S.fix.at]].ans)})()`);
+    if (view === 'multi') { const a = JSON.parse(ansIdx);
+      await ev(`document.querySelectorAll('.opt')[` + a[0] + `].click()`); await sleep(80);
+      await ev(`document.querySelectorAll('.opt')[` + a[1] + `].click()`);
+    } else if (view === 'evid') {
+      await ev(`document.querySelectorAll('.opt')[` + ansIdx + `].click()`); await sleep(80);
+      await ev(`document.querySelectorAll('.sent')[1].click()`);
+    } else await ev(`document.querySelectorAll('.opt')[` + ansIdx + `].click()`);
+    await sleep(260);
+    if (k === 0) ok((await txt()).includes('这次对了'), '订正当场给对错与解析');
+    await ev(`document.querySelector('#barbtn').click()`); await sleep(300);
+  }
+  ok((await txt()).includes('订正完了'), '订正完成页');
+  ok((await ev(`S.fix.ok`)) === nWrong, '订正结果如实统计');
+  await shot('k05c-fix');
+  await ev(`go('report')`); await sleep(320);
+
   console.log('\n[6] 同一份作答 → 大人那一层');
   await ev(`document.querySelector('#toPro').click()`); await sleep(300);
   t = await txt();
@@ -147,6 +180,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok(await ev(`document.querySelectorAll('.did').length === 8`), '八件事逐条说，每条带一句「这说明什么」');
   ok(plain.includes('不预测分数') && plain.includes('不排名') && plain.includes('不给孩子贴类型'), '三条红线写在家长页上');
   ok(await ev(`!!document.querySelector('details.ex')`), '判定细节收在折叠区');
+  ok(plain.includes('八道题的逐题讲评'), '家长页也能进讲评');
   ok(await ev(`document.querySelectorAll('.rules tr.hit').length === 1`), '判定规则只标一条');
   ok(await ev(`document.querySelectorAll('.meter').length >= 6`), '三闸门 + 处方条');
   ok(await ev(`!!S.prof.name`), '画像仍在内部算出', await ev(`S.prof.name`));
@@ -266,6 +300,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok(!/P7|O1|O2|O4|P4|P5|微技能|达标/.test(t), '不出现微技能编号与「达标」');
   ok(t.includes('断一天也不清零'), '明确「断了能接上」');
   ok(t.includes('第一颗牙'), '结算页留住今天写的那句话');
+  ok(t.includes('今天要钉正的'), '结算页有钉正区');
+  const nTodo = await ev(`document.querySelectorAll('[data-fix]').length`);
+  ok(t.includes('七件全做到了') || nTodo > 0, '没做到的每件都给正解与「回去改一下」入口', nTodo + ' 件待钉正');
   await shot('k06-train-done');
 
   console.log('\n[9] 大人那一层：面板与疗程');

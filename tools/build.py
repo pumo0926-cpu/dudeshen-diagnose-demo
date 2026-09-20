@@ -17,24 +17,32 @@ DX, TR = item('4-1'), item('2-3')
 # ── 分诊探针（8 题，全部可自动判定；L1×3 事实 / L2×3 推断与结构 / L3×2 证据与要点）──
 PROBE = [
  dict(layer="L1", tag="事实检索", q="「我」扫地时遇到的困难，下面哪一项<b>不是</b>文中提到的？",
-      opts=["桌椅不是摆好的，要先对齐","垃圾不在地上，在桌兜里","垃圾桶满了，扫拢的一堆没处放","扫把太短，弯腰太累"], ans=3),
+      opts=["桌椅不是摆好的，要先对齐","垃圾不在地上，在桌兜里","垃圾桶满了，扫拢的一堆没处放","扫把太短，弯腰太累"], ans=3,
+      why="文章用「第一、第二、第三」明明白白列了三个困难：桌椅要先对齐、垃圾在桌兜里、垃圾桶满了没处放。「扫把太短」全文没出现——这种题就是考你有没有真的按顺序读下来。", src=[4,5,6]),
  dict(layer="L1", tag="事实检索", q="陈可把拖把挂回墙角时，说了哪四个字？",
-      opts=["「你扫你的」","「下次好拿」","「拖之前」","「我没看见」"], ans=1),
+      opts=["「你扫你的」","「下次好拿」","「拖之前」","「我没看见」"], ans=1,
+      why="挂拖把时她把把手朝外，说的是「下次好拿」。别的三句她也说过，但都在前面的对话里——这题考的是能不能把话和场景对上。", src=[18]),
  dict(layer="L1", tag="事实检索", q="陈可拖地的方向是——",
-      opts=["从门口往最里面拖","等「我」全部扫完再从头拖","从最里面往外退着拖","和「我」一起从中间往两边拖"], ans=2),
+      opts=["从门口往最里面拖","等「我」全部扫完再从头拖","从最里面往外退着拖","和「我」一起从中间往两边拖"], ans=2,
+      why="原文写「一排一排往外退，退到哪儿，哪儿的地就变成干净的深色」。退着拖，才不会踩脏刚拖过的地——她做事的顺序感就藏在这一句里。", src=[11]),
  dict(layer="L2", tag="动机推断", q="「我」问「你什么时候摆的？」陈可答「拖之前」。这段对话让你看出陈可做事的什么特点？",
-      opts=["她想抢在「我」前面表现","她心里有顺序，而且做在别人看见之前","她怕老师检查不合格","她想早点做完回家"], ans=1),
+      opts=["她想抢在「我」前面表现","她心里有顺序，而且做在别人看见之前","她怕老师检查不合格","她想早点做完回家"], ans=1,
+      why="「我」问她什么时候摆的，她答「拖之前」；「我」说没看见，她答「你在扫第三排」——她不但做了，还清楚地知道自己什么时候做的。<b>做在别人看见之前</b>，这是全篇写她的核心。", src=[12,13,14,15,16]),
  dict(layer="L2", tag="段落作用", q="第二天早上「结果什么也看不出来」这一段，在全文里起什么作用？",
-      opts=["交代时间，让故事有头有尾","说明这间教室平时就很干净","用「看不出来」反过来显出这件事的性质：做得好的值日是不留痕迹的","为了写「我」比平时早到十分钟"], ans=2),
+      opts=["交代时间，让故事有头有尾","说明这间教室平时就很干净","用「看不出来」反过来显出这件事的性质：做得好的值日是不留痕迹的","为了写「我」比平时早到十分钟"], ans=2,
+      why="如果第二天一眼就能看出「昨天有人打扫过」，这件事反而不值得写。正因为<b>什么也看不出来</b>，才显出：干净是天天有人做出来的，只是没人看见。段落作用题，要问的是「去掉这一段，文章少了什么」。", src=[20,21,22]),
  dict(layer="L2", tag="结构顺序", q="全文是按什么顺序写的？",
-      opts=["倒叙：先写第二天早上，再回头写值日那天","按时间顺序：值日表 → 扫地遇到困难 → 陈可来了 → 第二天早上","插叙：中间插入陈可平时的表现","按空间顺序：从教室后面写到讲台"], ans=1),
+      opts=["倒叙：先写第二天早上，再回头写值日那天","按时间顺序：值日表 → 扫地遇到困难 → 陈可来了 → 第二天早上","插叙：中间插入陈可平时的表现","按空间顺序：从教室后面写到讲台"], ans=1,
+      why="从「开学第三周，轮到我值日」一路写到「第二天早上」，中间没有回跳，是<b>顺叙</b>。判断顺序最快的办法：找时间词（放学铃响、等我扫到最后一排、全部弄完、第二天早上）。", src=[0,2,17,20]),
  dict(layer="L3", tag="证据挂钩", q="作者靠什么把「话极少」的陈可写清楚？<br>先选观点，再从原文里<b>点一句</b>作证据。",
-      view="evid", opts=["靠动作和做事的顺序","靠外貌描写","靠别人对她的评价"], ans=0),
+      view="evid", opts=["靠动作和做事的顺序","靠外貌描写","靠别人对她的评价"], ans=0,
+      why="她全文只说了四句话。作者写她，靠的全是动作：退着拖、拖把拧到一滴水不掉、把手朝外挂回去、踮脚擦最上面一行。<b>写人不一定靠写话，动作更耐看。</b>", src=[11,17,18]),
  dict(layer="L3", tag="要点数", q="「每一个『本来』的背后，都有一个人。」这句话在说什么？<br><b>本题 4 分，请选两点。</b>",
       view="multi", opts=["我们习以为常的「干净」，其实都是有人做出来的",
                           "这些人做完就走，不被看见，所以才成了「本来」",
                           "教室每天都需要有人打扫",
-                          "陈可比「我」更会做值日"], ans=[0,1]),
+                          "陈可比「我」更会做值日"], ans=[0,1],
+      why="4 分题要写两点，而且这两点必须是<b>一句话的两层意思</b>：①「本来就干净」其实是有人做的；②做的人做完就走、不被看见，所以才会被当成「本来」。选项三只是常识，选项四跑题了——<b>要点不是想到什么写什么，是把原句拆成几层。</b>", src=[22]),
 ]
 # L3-1 可点选的候选句（支持集＝动作/顺序类）
 EVID = [
@@ -754,6 +762,10 @@ function scReport(){
    + '<table class="rules"><tr><td class="nm">不预测分数</td><td>没有任何产品能从一次阅读测出中考能考多少分</td></tr>'
    + '<tr><td class="nm">不排名</td><td>不和别的孩子比，只和他自己四周前比</td></tr>'
    + '<tr><td class="nm">不给孩子贴类型</td><td>我们内部有一个类型名，只用来挑练习；孩子看不到，你也不必记（想看可展开下面的判定细节）</td></tr></table></div>'
+   + '<div class="card"><div class="eyebrow">讲评与订正</div><h2 class="sec">八道题的逐题讲评</h2>'
+   + '<p>孩子答题时不给对错（否则「再来一次」那一步就失效了），讲评和订正放在这里：'
+   + '每道题的正解、为什么、原文在第几段，错的可以当场再做一遍。</p>'
+   + '<button class="cta ghost" id="toReview2" style="margin-top:4px">看逐题讲评 ›</button></div>'
    + '<details class="ex"><summary>判定细节：我们内部是怎么算的 ›</summary><div class="in">'
    + '<p style="margin:10px 0 6px;color:var(--ink)"><b>三道闸门</b>（串联，任何一道堵住卷面都是低分）</p>'
    + meter('I　输入闸　认字·词义·默读速度', m.I, cls(m.I))
@@ -773,7 +785,8 @@ function scReport(){
    + '单次分诊只是起点：真实版允许类型两周后才稳定，并每 4 周重判一次。</p>'
    + '</div></details>'
    + foot(), () => { cta('领今天的 15 分钟训练块', () => go('train'));
-     $('#toKid').onclick = () => { MODE = 'kid'; go('report'); }; });
+     $('#toKid').onclick = () => { MODE = 'kid'; go('report'); };
+     $('#toReview2').onclick = () => go('review'); });
 }
 
 /* 孩子看到的报告：只说「你做到了什么」和「今天练哪一件」。
@@ -807,6 +820,9 @@ function scReportKid(m){
    + '<p class="sub">这一条只有你知道，选了我们就按你说的调。</p>'
    + self.map((t, i) => '<button class="opt" data-self="' + i + '">' + t + '</button>').join('')
    + '<div id="sfb"></div></div>'
+   + '<div class="card"><div class="eyebrow">说好了要讲的</div><h2 class="sec">刚才那八道，一起看一遍</h2>'
+   + '<p>答题的时候没告诉你对错，是怕影响「再来一次」那一步。现在可以看了：<b>每道题的正解、为什么、原文在第几段</b>，错的还能当场订正。</p>'
+   + '<button class="cta ghost" id="toReview" style="margin-top:4px">看这八道的讲评 ›</button></div>'
    + '<div class="kidfoot">今天这篇到这儿就结束了，不用再往下刷。<br>'
    + '<a href="javascript:void(0)" id="redo">想重做一遍？从头再来 ›</a><br>'
    + '<a href="javascript:void(0)" id="toPro">这份结果大人看到的是什么样 ›</a></div>', () => {
@@ -822,7 +838,110 @@ function scReportKid(m){
     cta('开始今天的 15 分钟', () => go('train'));
     $('#toPro').onclick = () => { MODE = 'pro'; go('report'); };
     $('#redo').onclick = () => location.reload();
+    $('#toReview').onclick = () => go('review');
   });
+}
+
+/* 分诊时答应过「先不说对错，最后一起讲」——这里兑现：
+   八道题逐题给你选的／正解／为什么／原文在第几段，再把错的那几道当场订正一遍。 */
+function ansText(p, a){
+  if (!a) return '没作答';
+  if (p.view === 'multi') return (a.pick || []).map(k => p.opts[k]).join('　＋　') || '没作答';
+  if (p.view === 'evid') return (a.pick === null || a.pick === undefined ? '没选观点' : p.opts[a.pick])
+    + (a.sent === null || a.sent === undefined ? '' : '　＋　「' + D.dx.evid[a.sent].t + '」');
+  return a.pick === null || a.pick === undefined ? '没作答' : p.opts[a.pick];
+}
+function rightText(p){
+  if (p.view === 'multi') return p.ans.map(k => p.opts[k]).join('　＋　');
+  if (p.view === 'evid') return p.opts[p.ans] + '　＋　文中任意一句写动作的句子（如「' + D.dx.evid[1].t + '」）';
+  return p.opts[p.ans];
+}
+function srcFoldDX(idxs){
+  if (!idxs || !idxs.length) return '';
+  return '<details class="ex"><summary>看原文 ›</summary><div class="in">'
+   + idxs.map(i => '<p style="margin:0 0 8px;color:var(--ink);line-height:1.9"><span class="pn">' + (CN[i] || (i+1)) + '</span>'
+       + esc(D.dx.paras[i]) + '</p>').join('') + '</div></details>';
+}
+function scReview(){
+  stopClock(); steps(null); setTop('一起看这八道', '讲完可以订正', () => go('report'), true);
+  const right = S.ans.filter(a => a && a.right).length;
+  const wrong = S.ans.map((a, i) => a && !a.right ? i : -1).filter(i => i >= 0);
+  const mis = S.ans.map((a, i) => a && a.conf === 1 && !a.right ? i : -1).filter(i => i >= 0);
+  paint('<div class="card"><div class="eyebrow">答应过要讲的</div>'
+   + '<h2 class="sec">八道题，对了 ' + right + ' 道</h2>'
+   + '<p class="sub" style="margin:0">' + (wrong.length === 0 ? '全对。下面还是逐题看一眼为什么这么选。'
+       : '错的 ' + wrong.length + ' 道' + (mis.length ? '，其中 <b>' + mis.length + ' 道你说过「有底」</b>——这几道最值得看。' : '。')) + '</p></div>'
+   + D.dx.probe.map((p, i) => {
+       const a = S.ans[i], okk = a && a.right, flag = a && a.conf === 1 && !a.right;
+       return '<div class="card"><div class="eyebrow">第 ' + (i+1) + ' 题'
+         + '<span class="pill ' + (okk ? 'ok' : '') + '">' + (okk ? '✓ 对了' : '✗ 错了') + '</span>'
+         + (flag ? '<span class="pill on">你说过有底</span>' : '') + '</div>'
+         + '<div class="qh" style="margin-top:0">' + p.q + '</div>'
+         + (okk ? '' : '<div class="fb bad" style="margin:0 0 8px"><b>你选的：</b>' + esc(ansText(p, a)) + '</div>')
+         + '<div class="fb ok" style="margin:0 0 10px"><b>正解：</b>' + esc(rightText(p)) + '</div>'
+         + '<p style="font-size:14px;line-height:1.8">' + p.why + '</p>'
+         + srcFoldDX(p.src) + '</div>'; }).join('')
+   + (wrong.length ? '<div class="card"><div class="eyebrow">订正</div><h2 class="sec">错的 ' + wrong.length + ' 道，现在再做一遍</h2>'
+       + '<p class="sub" style="margin:0">讲过了才算数——自己再做对一次，这道题才真的过去了。</p></div>' : '')
+   + foot(), () => {
+    if (wrong.length) cta('开始订正这 ' + wrong.length + ' 道', () => go('fix'));
+    else cta('回报告', () => go('report'), true);
+  });
+}
+/* 订正：只做错题，这一次当场给对错；改对了才算订完 */
+function scFix(){
+  stopClock(); steps(null); setTop('订正', '这次会告诉你对错', () => go('review'), true);
+  const wrong = S.ans.map((a, i) => a && !a.right ? i : -1).filter(i => i >= 0);
+  S.fix = S.fix || {ok: 0, at: 0};
+  const one = () => {
+    if (S.fix.at >= wrong.length) {
+      paint('<div class="big"><div class="n">订正完了</div><div class="t">' + S.fix.ok + '/' + wrong.length + ' 道这次做对了</div></div>'
+       + '<div class="said">' + (S.fix.ok === wrong.length ? '全部改对。错过一次又自己改对的题，比一开始就做对的题记得牢。'
+           : '还有 ' + (wrong.length - S.fix.ok) + ' 道没改对——回去把解析再看一遍，特别看「原文在第几段」那一段。') + '</div>'
+       + '<div class="kidfoot">今天的分诊到这儿就结束了。</div>',
+       () => { cta('去今天的训练', () => go('train')); });
+      return;
+    }
+    const i = wrong[S.fix.at], p = D.dx.probe[i];
+    let pick = (p.view === 'multi') ? [] : null, sent = null, judged = false;
+    paint('<div class="card tight"><div class="eyebrow">订正 · 第 ' + (S.fix.at+1) + '/' + wrong.length + ' 道</div>'
+     + '<h2 class="sec">再做一遍</h2><p class="sub" style="margin:0">想清楚再选，这次会立刻告诉你对错。</p></div>'
+     + srcFoldDX(p.src)
+     + '<div class="qh">' + p.q + '</div>'
+     + p.opts.map((o, k) => '<button class="opt" data-k="' + k + '">' + o + '</button>').join('')
+     + (p.view === 'evid' ? '<p class="sub" style="margin:14px 0 8px">再点一句原文作证据：</p>'
+         + D.dx.evid.map((e, k) => '<button class="sent" data-e="' + k + '"><span class="pn">' + (CN[e.p] || '') + '</span>'
+             + esc(e.t) + '</button>').join('') : '')
+     + '<div id="fx"></div>', () => {
+      noCta();
+      const judge2 = () => {
+        let ok;
+        if (p.view === 'multi') { if (pick.length !== 2) return; ok = p.ans.every(x => pick.includes(x)); }
+        else if (p.view === 'evid') { if (pick === null || sent === null) return; ok = pick === p.ans && D.dx.evid[sent].ok; }
+        else { if (pick === null) return; ok = pick === p.ans; }
+        if (judged) return; judged = true;
+        if (ok) S.fix.ok++;
+        $('#fx').innerHTML = '<div class="fb ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✓ 这次对了。' : '✗ 还是不对。')
+          + '<br><b>正解：</b>' + esc(rightText(p)) + '<br>' + p.why + '</div>';
+        cta(S.fix.at + 1 >= wrong.length ? '看订正结果' : '下一道', () => { S.fix.at++; one(); });
+      };
+      main.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+        if (judged) return;
+        const k = +b.dataset.k;
+        if (p.view === 'multi') { const at = pick.indexOf(k); if (at >= 0) pick.splice(at,1); else if (pick.length < 2) pick.push(k);
+          main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', pick.includes(+x.dataset.k))); }
+        else { pick = k; main.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', +x.dataset.k === k)); }
+        judge2();
+      });
+      main.querySelectorAll('.sent').forEach(b => b.onclick = () => {
+        if (judged) return;
+        sent = +b.dataset.e;
+        main.querySelectorAll('.sent').forEach(x => x.setAttribute('aria-pressed', +x.dataset.e === sent));
+        judge2();
+      });
+    });
+  };
+  one();
 }
 
 /* ══ 7. 训练块（15 分钟五步，按画像挂靶点）══ */
@@ -1212,15 +1331,23 @@ function scWriteBack(){
 /* 孩子看到的收尾：做到了什么 ＋ 明天还有一篇。没有编号，没有进度条式的评分 */
 function scTDoneKid(){
   const done = [
-    ['标出了一处没看懂的地方', S.tr.markWhy !== undefined, '不懂的地方能被你自己揪出来，比全篇点头有用得多'],
-    ['把题目要什么拆清楚了', !!S.tr.o1, '要你干什么、去哪儿找、写几点'],
-    ['按分数定了写几点', !!S.tr.o2, '4 分写两点，这条以后每道大题都用得上'],
-    ['给答案找了原文撑着', !!S.tr.o4, '找不到句子撑的那点，多半不是答案'],
-    ['把文章切成了三块', !!S.tr.p4, '切开了，概括就不会抓瞎'],
-    ['一句话说清了全文', !!S.tr.p5, '30 字以内，还不是套话'],
-    ['写了一句自己的话', !!S.tr.write, '今天这篇真正属于你的那部分'],
+    ['标出了一处没看懂的地方', S.tr.markWhy !== undefined, '不懂的地方能被你自己揪出来，比全篇点头有用得多',
+      '读的时候点任意一段，再选是「词不懂／关系不懂／背景不懂」。', 1],
+    ['把题目要什么拆清楚了', !!S.tr.o1, '要你干什么、去哪儿找、写几点',
+      '这道题的三样是：<b>说说</b>（干什么）· <b>第⑤⑥段</b>（去哪找）· <b>答两点</b>（写几点）。', 2],
+    ['按分数定了写几点', !!S.tr.o2, '4 分写两点，这条以后每道大题都用得上',
+      '<b>4 分 → 写 2 点</b>。老师按「点」给分，不按你写得多长给。', 2],
+    ['给答案找了原文撑着', !!S.tr.o4, '找不到句子撑的那点，多半不是答案',
+      '能撑住的是这两句之一：「被取用得越多的记忆，越不容易丢失」「每取出来一次，记忆都有可能被改一点」。', 2],
+    ['把文章切成了三块', !!S.tr.p4, '切开了，概括就不会抓瞎',
+      '标准切法：<b>第①②段｜第③④⑤段｜第⑥段起</b> —— 提出问题 ｜ 三个原因 ｜ 牢与准的两面。', 3],
+    ['一句话说清了全文', !!S.tr.p5, '30 字以内，还不是套话',
+      '照这个样子写就行：<b>「童年的事记得牢，但不一定准，因为它被反复讲述。」</b>（23 字，有主体、有原因，不是套话）', 3],
+    ['写了一句自己的话', !!S.tr.write, '今天这篇真正属于你的那部分',
+      '写自己身上的一件小事，15 个字起步——写完那一步会逐句回应你。', 4],
   ];
   const good = done.filter(d => d[1]).length;
+  const todo = done.filter(d => !d[1]);
   paint('<div class="big"><div class="n">今天读完了</div><div class="t">' + D.tr.title + ' · 用了五步</div></div>'
    + '<div class="said">这一篇里你做到了 <b>' + good + '</b> 件事。'
    + (good >= 6 ? '挺稳的，明天换一篇再来一次。' : '没做到的那几件，明天那篇还会再遇到，不用着急。') + '</div>'
@@ -1228,13 +1355,23 @@ function scTDoneKid(){
    + done.map(d => '<div class="did"><span class="m ' + (d[1] ? '' : 'no') + '">' + (d[1] ? '✓' : '–') + '</span>'
      + '<span class="t"><b>' + d[0] + '</b>' + d[2] + '</span></div>').join('')
    + '<p class="note">同一件事连着三篇都做到，才算真的会了。今天是第一篇。</p></div>'
+   + (todo.length ? '<div class="card"><div class="eyebrow">今天要钉正的</div>'
+       + '<h2 class="sec">' + todo.length + ' 件没做到，正解在这儿</h2>'
+       + '<p class="sub">看完可以当场回去改一次——改过的才算今天真做到了。</p>'
+       + todo.map((d, k) => '<div class="did" style="flex-direction:column;align-items:stretch;gap:6px">'
+           + '<b style="color:var(--ink);font-size:15px">' + d[0] + '</b>'
+           + '<div style="font-size:13.5px;color:var(--ink-2);line-height:1.75">' + d[3] + '</div>'
+           + '<button class="cta ghost" data-fix="' + d[4] + '" style="margin:2px 0 0">现在回去改一下 ›</button></div>').join('')
+       + '</div>' : '<div class="card"><div class="eyebrow">今天要钉正的</div><h2 class="sec">没有</h2>'
+       + '<p style="margin:0">七件全做到了，今天不用回头。</p></div>')
    + (S.tr.writeText ? '<div class="card"><div class="eyebrow">今天你留下的一句话</div>'
        + '<div class="said" style="margin:0">' + esc(S.tr.writeText.trim()) + '</div>'
        + '<p class="note">这些句子会一句句攒起来。攒够一学期，就是一本只属于你的读书笔记。</p></div>' : '')
    + '<div class="card"><div class="eyebrow">明天</div><h2 class="sec">还有一篇，一样十五分钟</h2>'
    + '<p>今天到这儿就结束了，不用再往下刷。<b>断一天也不清零</b>，回来接着读就行。</p></div>'
    + '<div class="kidfoot"><a href="javascript:void(0)" id="toPro">这些练的是什么，给大人看 ›</a></div>',
-   () => { noCta(); $('#toPro').onclick = () => { MODE = 'pro'; go('skills'); }; });
+   () => { noCta(); $('#toPro').onclick = () => { MODE = 'pro'; go('skills'); };
+     main.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => go('train', +b.dataset.fix)); });
 }
 
 /* ══ 8. 微技能面板 / 疗程 / 说明 ══ */
@@ -1290,7 +1427,8 @@ function scPlan(){
 
 /* ══ 路由 ══ */
 const R = {intro: scIntro, read: scRead, q: scQ, retell: scRetell, bj: scBJ, vocab: scVocab,
-           report: scReport, train: scTrain, wfb: scWriteBack, tdone: scTDone, skills: scSkills, plan: scPlan};
+           report: scReport, review: scReview, fix: scFix,
+           train: scTrain, wfb: scWriteBack, tdone: scTDone, skills: scSkills, plan: scPlan};
 function go(name, arg){ CUR = [name, arg]; (R[name] || scIntro)(arg); }
 go('intro');
 """
