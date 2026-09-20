@@ -69,25 +69,25 @@ VOCAB = [
 PROFILES = [
  dict(k="slow",  name="慢读型",   gate="输入闸", why="读得懂，但读不完",
       rx=[("配速与流畅 I1", 40), ("结构切块 P4·P5", 30), ("输出 O1·O2·O4", 30)],
-      act="今天这篇，定个闹钟：两分钟读完前半段，不回头。", kid="今天这篇，前半段给自己定两分钟，读完再回头。", kidwhy="你读得挺细，就是时间不太够用。慢本身不是毛病，但卷子上得有个节奏。"),
+      act="今天这篇，定个闹钟：两分钟读完前半段，不回头。", kid="今天这篇，前半段给自己定两分钟，读完再回头。", kidwhy="你读得挺细，就是时间不太够用。慢本身不是毛病，但卷子上得有个节奏。", pname="读得慢，时间不够用", pwhy="他读得挺细，问题是速度——卷面文字量一大就做不完，后面的题只能赶。"),
  dict(k="skim",  name="跳读型",   gate="加工闸", why="快，但只抓表层，靠猜",
       rx=[("推断 P2·P3", 50), ("理解监控 P7", 20), ("输出 O1·O4", 30)],
-      act="读人物的时候，多问一句：他为什么这么做？从哪句看出来？", kid="今天这篇，碰到人物就多问一句：他为什么这么做？", kidwhy="你读得快，不过有几处是猜的。猜对了也不算真的会。"),
+      act="读人物的时候，多问一句：他为什么这么做？从哪句看出来？", kid="今天这篇，碰到人物就多问一句：他为什么这么做？", kidwhy="你读得快，不过有几处是猜的。猜对了也不算真的会。", pname="读得快，但读得浅", pwhy="他读得很快，可有几处是猜的。猜对也不算会，换一篇陌生文章就露出来。"),
  dict(k="scatter",name="散点型",  gate="加工闸", why="细节都懂，抓不住整体",
       rx=[("结构切块＋概括 P4·P5", 50), ("推断 P2·P3", 20), ("输出 O2·O5", 30)],
-      act="今天这篇，试着把它切成三块，每块起个六个字以内的小标题。", kid="今天这篇，试着切成三块，每块起个六个字以内的小标题。", kidwhy="文章里发生了什么你都记得，但串不成一条线——概括题就是丢在这儿。"),
+      act="今天这篇，试着把它切成三块，每块起个六个字以内的小标题。", kid="今天这篇，试着切成三块，每块起个六个字以内的小标题。", kidwhy="文章里发生了什么你都记得，但串不成一条线——概括题就是丢在这儿。", pname="记得住细节，抓不住整体", pwhy="文章里发生了什么他都记得，但串不成一条线——概括题、主旨题最容易丢分。"),
  dict(k="copy",  name="搬运型",   gate="输出闸", why="读懂了，但答案全是原文",
       rx=[("要点化＋证据句 O4·O5", 50), ("审题 O1·O2", 30), ("推断 P3", 20)],
-      act="每写一点，后面挂一句原文；挂不住的那点，八成不是答案。", kid="今天这篇，每写一点，后面挂一句原文。", kidwhy="你其实读懂了。写下来的时候整句照搬了原文，老师想看的是你自己的话，再挂一句原文。"),
+      act="每写一点，后面挂一句原文；挂不住的那点，八成不是答案。", kid="今天这篇，每写一点，后面挂一句原文。", kidwhy="你其实读懂了。写下来的时候整句照搬了原文，老师想看的是你自己的话，再挂一句原文。", pname="读懂了，但写不出来", pwhy="他其实读懂了，写下来却整句照搬原文。阅卷要的是自己的话＋一句原文作证。"),
  dict(k="miscal",name="失校准型", gate="加工闸", why="自我感觉良好，一对答案全错",
       rx=[("理解监控 P7", 40), ("推断 P2·P3", 30), ("输出 O4", 30)],
-      act="每篇必须标出一处「我这里没懂」——标不出来才是问题。", kid="今天这篇，标出一处你没看懂的地方。", kidwhy="有几道题你觉得挺有底，其实答错了。这不是粗心——是读的时候有个地方没懂，你自己没发现。"),
+      act="每篇必须标出一处「我这里没懂」——标不出来才是问题。", kid="今天这篇，标出一处你没看懂的地方。", kidwhy="有几道题你觉得挺有底，其实答错了。这不是粗心——是读的时候有个地方没懂，你自己没发现。", pname="自我感觉和实际有差距", pwhy="有几道题他答完说「有把握」，其实错了。这一条最值得注意：他不知道自己没懂，也就不会回头再看。"),
  dict(k="base",  name="基础薄弱型",gate="输入闸", why="词卡住了，全线受影响",
       rx=[("词汇·语素 I2·I3", 40), ("短文流畅 I1", 30), ("最低门槛输出", 30)],
-      act="遇到不认识的词先别停，用上下文换个词读下去，读完再回头查。", kid="今天这篇，遇到不认识的词先别停，用上下文猜一个，读完再回头查。", kidwhy="有几个词把你卡住了，后面一整段就跟着糊过去了。"),
+      act="遇到不认识的词先别停，用上下文换个词读下去，读完再回头查。", kid="今天这篇，遇到不认识的词先别停，用上下文猜一个，读完再回头查。", kidwhy="有几个词把你卡住了，后面一整段就跟着糊过去了。", pname="词上卡住，拖累了整篇", pwhy="有几个书面语／文言词把他卡住，后面一整段就跟着糊过去了。"),
  dict(k="even",  name="暂未偏科", gate="三闸门均衡", why="单次分诊没有测出明显短板",
       rx=[("全员必练六项", 60), ("推断 P2·P3", 20), ("知识建构（主题簇连读）", 20)],
-      act="保持每篇一次输出；真实版会用两周滚动数据再判一次。", kid="今天这篇，读完写一句话，就算完成。", kidwhy="这一篇看不出明显的短板。再读两篇才作数。"),
+      act="保持每篇一次输出；真实版会用两周滚动数据再判一次。", kid="今天这篇，读完写一句话，就算完成。", kidwhy="这一篇看不出明显的短板。再读两篇才作数。", pname="这次没看出明显短板", pwhy="单次分诊没测出明显弱项。再读两篇才作数——这一条我们不会拿来下结论。"),
 ]
 # ── 17 个微技能（09 §5）──
 SKILLS = [
@@ -370,7 +370,7 @@ function steps(list, idx){
   stp.innerHTML = list.map((t, i) => '<div class="' + (i === idx ? 'on' : (i < idx ? 'past' : '')) + '">'
     + '<span class="bar"></span><span class="lb">' + esc(t) + '</span></div>').join('');
 }
-function foot(){ return '<div class="foot">读得深 · 三道闸门 Demo · 2026-09<br>'
+function foot(){ return '<div class="foot">读得深 · 初一阅读分诊与训练 Demo · 2026-09<br>'
   + '本页数据只存在于你的浏览器里，不上传、不保存<br>'
   + '<a href="https://pumo0926-cpu.github.io/dudeshen-docs/doc-09.html">方案全文 09</a> · '
   + '<a href="https://pumo0926-cpu.github.io/dudeshen-docs/">项目资料站</a></div>'; }
@@ -664,6 +664,7 @@ function metrics(){
   const O = Math.round((0.60 * (L3/2) + 0.25 * (L1/3) + 0.15 * (1 - Math.min(ba,.4)/.4)) * 100);
   const wtxt = S.read.over ? '超时未读完' : (wpm > 1200 ? '＞1200 字·分（几乎没读）' : wpm + ' 字·分');
   return {wpm, wtxt, sec, L1, L2, L3, mis, cov, ba, voc, vn, I, P, O, over: S.read.over,
+          fixed: S.bj.fixed, redone: S.bj.redone,
           structWrong: (S.ans[4] && !S.ans[4].right) || (S.ans[5] && !S.ans[5].right)};
 }
 function judge(m){
@@ -690,47 +691,87 @@ function scReport(){
   const m = metrics(), j = judge(m);
   S.prof = D.profiles.find(p => p.k === j.key);
   if (MODE === 'kid') return scReportKid(m);
-  const meter = (n, v, cls) => '<div class="meter ' + (cls||'') + '"><div class="lab"><span>' + n + '</span><b>' + v + '</b></div>'
+
+  /* 家长那一页：先给一句人话的结论，再给一张「我们看了什么·他的结果·这说明什么」的表。
+     L1/L2/B−A 这类内部写法一律翻译；判定规则与闸门分数收进最后的折叠区。 */
+  const meter = (n2, v, cls) => '<div class="meter ' + (cls||'') + '"><div class="lab"><span>' + n2 + '</span><b>' + v + '</b></div>'
     + '<div class="track"><i class="fill" style="width:' + v + '%"></i></div></div>';
   const cls = v => v >= 70 ? 'g' : (v >= 50 ? '' : 'w');
-  paint('<div class="fb" style="margin:14px 0 0">这是<b>大人看到的那一层</b>。孩子在同一次作答后看到的是另一页：没有画像名、没有分数、只有「你做到的五件事」和今天练哪一件。'
-   + '<a href="javascript:void(0)" id="toKid" style="color:var(--accent)">切回孩子视角 ›</a></div>'
-   + '<div class="big"><div class="n">' + esc(S.prof.name) + '</div><div class="t">' + esc(S.prof.why) + ' · 主卡在' + esc(S.prof.gate) + '</div></div>'
-   + '<div class="card"><div class="eyebrow">三道闸门</div>'
+  const rows = [
+    ['读得快不快',
+     m.over ? '6 分钟没读完' : (m.wpm > 1200 ? '几乎没读就开始答' : m.wpm + ' 字/分钟'),
+     m.over ? '这篇 ' + D.dx.words + ' 字，他没读完。先不谈快慢，要先解决「读不完」。'
+       : (m.wpm > 1200 ? '他几乎没读就开始答题了——下面几行的结果要按这个前提看。'
+       : (m.wpm < 300 ? '课标要求初中生默读每分钟不少于 500 字。他偏慢，卷面字数一多就会做不完。'
+       : (m.wpm > 600 ? '比课标要求快。快本身不是问题，要看下面几行跟不跟得上。' : '速度够用，不是问题。')))],
+    ['读完记住了多少', m.L1 + ' / 3 道',
+     '问的是文章里发生了什么（他遇到哪三个困难、她说了哪四个字）。'
+     + (m.L1 >= 2 ? '这一项没问题。' : '细节留不住，多半是读的时候没真读进去。')],
+    ['能不能想深一层', m.L2 + ' / 3 道',
+     '问的是「人物为什么这么做」「这一段起什么作用」——中考现代文的主要失分区。'
+     + (m.L2 >= 2 ? '这一项还行。' : '这一项偏弱，是接下来要练的。')],
+    ['答题能不能扣住原文', m.L3 + ' / 2 道',
+     '中考主观题按要点给分，每一点都要挂得住原文。'
+     + (m.L3 >= 1 ? '他知道要找依据。' : '他现在答题挂不住原文，容易答了一堆不得分。')],
+    ['合上书能不能讲清楚', m.cov + ' / 4 样',
+     '四样是：谁、做了什么、先后顺序、为什么这件事值得写。'
+     + (m.cov >= 3 ? '结构在他脑子里是成形的。' : '说不全，说明读完没形成一条线。')],
+    ['认字词有没有卡住', m.voc + ' / ' + m.vn + ' 个',
+     '书面语与课内文言词（骤、舍、委、引、顾……）。'
+     + (m.voc >= 6 ? '词上没卡。' : '词上卡住会拖累整篇理解，要先补这一块。')],
+    ['自我感觉准不准', m.mis + ' / 8 道',
+     '这几道他答完说「有把握」，实际答错了。'
+     + (m.mis >= 3 ? '<b>这是最值得注意的一条</b>：他不知道自己没懂，所以也不会回头再看。' : '他对自己的判断比较准。')],
+    ['给时间、允许翻回原文再做一遍',
+     (m.redone ? m.fixed + ' 道改对（共 ' + m.redone + ' 道）' : '没有错题，跳过'),
+     m.redone === 0 ? '第一遍就全对，这一项用不上。'
+       : (m.ba >= .25 ? '差别明显：<b>不少题是「来不及／没细看」，不是真不会</b>——先练配速和审题最划算。'
+       : '差别不大：<b>错的那些是真的不会</b>，给再多时间也一样，要从读懂那一步补。')],
+  ];
+  paint('<div class="fb" style="margin:14px 0 0">这是<b>给家长看的那一页</b>（也是大人看到的那一层）。孩子在同一次作答后看到的是另一页：没有类型名、没有分数，只有「你做到的五件事」和今天练哪一件。'
+   + '<a href="javascript:void(0)" id="toKid" style="color:var(--accent)">看看孩子那页 ›</a></div>'
+   + '<div class="big"><div class="n" style="font-size:30px;line-height:1.25">' + esc(S.prof.pname) + '</div>'
+   + '<div class="t">这次分诊的结论 · 8 分钟 · 一篇 ' + D.dx.words + ' 字的文章</div></div>'
+   + '<div class="said">' + S.prof.pwhy + '</div>'
+   + '<div class="card"><div class="eyebrow">这 8 分钟测了什么</div><h2 class="sec">八件事，逐条说</h2>'
+   + '<p class="sub">左边是我们看的东西，中间是他这次的结果，下面一行是这代表什么</p>'
+   + rows.map(r => '<div class="did" style="flex-direction:column;align-items:stretch;gap:4px">'
+       + '<div style="display:flex;gap:10px;align-items:baseline">'
+       + '<b style="flex:1;color:var(--ink);font-size:15px">' + r[0] + '</b>'
+       + '<span style="font-variant-numeric:tabular-nums;font-weight:680;color:var(--accent);white-space:nowrap">' + esc(r[1]) + '</span></div>'
+       + '<div style="font-size:13px;color:var(--ink-2);line-height:1.7">' + r[2] + '</div></div>').join('')
+   + '</div>'
+   + '<div class="card"><div class="eyebrow">本月建议</div><h2 class="sec">只主攻一件事</h2>'
+   + '<div class="fb ok" style="margin:0 0 12px"><b>' + esc(S.prof.act) + '</b></div>'
+   + '<p class="sub" style="margin:0 0 10px">时间大致这么分（同时在练的不超过 3 项，多了 15 分钟装不下）</p>'
+   + S.prof.rx.map(r => meter(r[0].replace(/\s*[A-Z]\d(·[A-Z]\d)*\s*$/, ''), r[1])).join('')
+   + '<p class="note">孩子那边看到的只有一句：「' + esc(S.prof.kid) + '」——不会出现类型名，也不会出现分数。</p></div>'
+   + '<div class="card"><div class="eyebrow">四周后怎么知道有没有用</div>'
+   + '<table class="rules"><tr><td class="nm">看什么</td><td>同样的八件事，换一篇没读过的文章再测一次</td></tr>'
+   + '<tr><td class="nm">算有进展</td><td>这次弱的那两项（' + esc(rows.filter((r,i) => [2,3,6].includes(i)).map(r => r[0]).join('、')) + '）里，至少一项明显变好</td></tr>'
+   + '<tr><td class="nm">不算数</td><td>只是「做得多了」「打卡天数长了」——那是习惯，不是理解力</td></tr></table></div>'
+   + '<div class="card"><div class="eyebrow">我们不做的三件事</div>'
+   + '<table class="rules"><tr><td class="nm">不预测分数</td><td>没有任何产品能从一次阅读测出中考能考多少分</td></tr>'
+   + '<tr><td class="nm">不排名</td><td>不和别的孩子比，只和他自己四周前比</td></tr>'
+   + '<tr><td class="nm">不给孩子贴类型</td><td>我们内部有一个类型名，只用来挑练习；孩子看不到，你也不必记（想看可展开下面的判定细节）</td></tr></table></div>'
+   + '<details class="ex"><summary>判定细节：我们内部是怎么算的 ›</summary><div class="in">'
+   + '<p style="margin:10px 0 6px;color:var(--ink)"><b>三道闸门</b>（串联，任何一道堵住卷面都是低分）</p>'
    + meter('I　输入闸　认字·词义·默读速度', m.I, cls(m.I))
    + meter('P　加工闸　推断·结构·理解监控', m.P, cls(m.P))
    + meter('O　输出闸　审题·要点·证据·配速', m.O, cls(m.O))
-   + '<p class="note">三道闸门是串联的：任何一道堵住，卷面都是低分，而且低分的样子长得一样。</p></div>'
-   + '<div class="card"><div class="eyebrow">你的实测</div><div class="two" style="margin-bottom:10px">'
-   + '<div class="kv"><b>' + (m.over ? '超时' : (m.wpm > 1200 ? '＞1200' : m.wpm)) + '</b><span>'
-   + (m.over ? '6 分钟没读完' : (m.wpm > 1200 ? '字／分：几乎没读' : '字／分（课标 ≥500）')) + '</span></div>'
-   + '<div class="kv"><b>' + (m.L1+m.L2+m.L3) + '/8</b><span>探针答对（L1 ' + m.L1 + '·L2 ' + m.L2 + '·L3 ' + m.L3 + '）</span></div>'
-   + '<div class="kv"><b>' + m.mis + '/8</b><span>有把握却答错</span></div>'
-   + '<div class="kv"><b>' + m.cov + '/4</b><span>复述覆盖（谁·做什么·先后·为什么）</span></div>'
-   + '<div class="kv"><b>' + Math.round(m.ba*100) + '%</b><span>B−A 差值（错题重做改对）</span></div>'
-   + '<div class="kv"><b>' + m.voc + '/' + m.vn + '</b><span>词义速判</span></div></div>'
-   + '<p class="note">B−A 大＝「来不及／没细看」；B−A≈0 且分低＝「真不会」。这是最便宜的一个分离器。</p></div>'
-   + '<div class="card"><div class="eyebrow">判定是怎么来的</div><h2 class="sec">六条规则，逐条对</h2>'
-   + '<p class="sub">命中的第一条即为画像（顺序＝从最底层的病因往上）</p><table class="rules">'
+   + '<p style="margin:14px 0 6px;color:var(--ink)"><b>六条规则，逐条对</b>（命中的第一条即为判定）</p>'
+   + '<table class="rules">'
    + j.rows.map(r => {
-       const p = D.profiles.find(x => x.k === r.k), win = r.k === j.key;
-       return '<tr class="' + (win ? 'hit' : '') + '"><td class="nm">' + esc(p.name)
+       const pf = D.profiles.find(x => x.k === r.k), win = r.k === j.key;
+       return '<tr class="' + (win ? 'hit' : '') + '"><td class="nm">' + esc(pf.name)
          + (win ? '<span class="pill on">判定</span>' : (r.hit ? '<span class="pill">也触发</span>' : ''))
          + '<br><span style="font-weight:400;font-size:11.5px;color:var(--ink-muted)">' + esc(r.c) + '</span></td>'
          + '<td class="vl">' + esc(r.v) + '</td></tr>'; }).join('')
-   + '</table><p class="note"><b>多条同时触发是常态</b>——三道闸门是串联的，一处堵住会把下游一起拖低。'
-   + '所以判定取<b>最靠前的那一条</b>（顺序＝从最底层的病因往上），先治底层，上游的症状往往跟着消失。'
-   + '单次分诊只是起点：真实版允许画像两周后才稳定，并每 4 周重判一次。</p></div>'
-   + '<div class="card"><div class="eyebrow">本月处方</div><h2 class="sec">' + esc(S.prof.name) + ' 的时间该怎么分</h2>'
-   + '<p class="sub">同时在训的微技能 ≤ 3 个，多了单元必然超过 15 分钟</p>'
-   + S.prof.rx.map(r => meter(r[0], r[1])).join('')
-   + '<div class="fb ok" style="margin-top:12px"><b>今天就能做的一件事：</b><br>' + esc(S.prof.act) + '</div></div>'
-   + '<div class="card"><div class="eyebrow">同一份结论，三种说法</div><h2 class="sec">画像不给孩子看</h2>'
-   + '<div class="vs"><div class="b no"><em>❌ 不能这么写</em>「孩子属于' + esc(S.prof.name) + '，' + esc(S.prof.gate) + '能力弱。」</div>'
-   + '<div class="b yes"><em>✅ 给家长（动作语言）</em>「本月主攻：' + esc(S.prof.act) + '」<br>'
-   + '「这周他有 4 次做到了，其中 3 次挂住了原文。」</div>'
-   + '<div class="b yes"><em>✅ 给孩子（只剩一句）</em>「' + esc(S.prof.kid) + '」</div></div>'
-   + '<p class="note">标签会自我实现。初中生对「我是差的那一类」极其敏感——所以画像只在内部使用。</p></div>'
+   + '</table>'
+   + '<p class="note">L1＝事实检索题，L2＝推断与结构题，L3＝证据与要点题；B−A＝同一批错题「允许翻回原文重做」后改对的比例。'
+   + '<b>多条同时触发是常态</b>——闸门串联，一处堵住会把下游一起拖低，所以判定取最靠前的那一条，先治底层。'
+   + '单次分诊只是起点：真实版允许类型两周后才稳定，并每 4 周重判一次。</p>'
+   + '</div></details>'
    + foot(), () => { cta('领今天的 15 分钟训练块', () => go('train'));
      $('#toKid').onclick = () => { MODE = 'kid'; go('report'); }; });
 }
